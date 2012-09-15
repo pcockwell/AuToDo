@@ -1,21 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="utf-8">
-	<title>Welcome to CodeIgniter</title>
+<?php
 
-	<link href="<?php echo base_url(); ?>assets/css/bootstrap.min.css" rel="stylesheet">
+$this->load->view('header');
 
-</head>
-<body>
-
+?>
 <div class="container">
-   <div class="hero-unit">
-      This is the frontpage view.
-   </div>
+    <div class="row">
+    	<div class="span8 schedule">
+    		<h4>Today's Schedule</h4>
+    		<p>Hello World</p>
+    		<p>Hello World</p>
+    		<p>Hello World</p>
+    	</div>
+    	<div class="span4 info-bar">
+    		<h4>Information</h4>
+    		<p>Hello World</p>
+    		<p>Hello World</p>
+    		<p>Hello World</p>
+    	</div>
+    </div>
 </div>
+<?php
 
-<script src="http://code.jquery.com/jquery-latest.js"></script>
-<script src="<?php echo base_url(); ?>assets/js/bootstrap.min.js"></script>
-</body>
-</html>
+$this->load->view('footer');
+
+?>

@@ -1,0 +1,36 @@
+.schedule{
+	background-color: #DCEAF4;
+	border-radius: 3px;
+}
+
+.info-bar{
+	background-color: #BBD8E9;
+	border-radius: 3px;
+}
+
+/* Nav header styles */
+
+#nav-navbar-autodo .nav > li > a {
+  padding: 15px 10px;
+}
+
+#nav-navbar-autodo a.brand {
+  padding: 14px 20px 12px;
+}
+
+#nav-logo-autodo {
+  /*background-image: url(../img/logo.png);
+  background-repeat: no-repeat;*/
+  width: 200px;
+  height: 50px;
+  float: right;
+}
+
+.nav.pull-right {
+  margin-right: 15px;
+}
+
+body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+}
