@@ -80,7 +80,7 @@ $autoload['helper'] = array('url', 'log');
 |
 */
 
-$autoload['config'] = array();
+$autoload['config'] = array('autodo');
 
 
 /*
