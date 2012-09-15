@@ -758,6 +758,43 @@ class CI_DB_mysql_driver extends CI_DB {
 		return $sql."LIMIT ".$offset.$limit;
 	}
 
+    /**
+    * ON DUPLICATE UPDATE statement
+    *
+    * Generates a platform-specific on duplicate key update string from the supplied data
+    *
+    * @author    Chris Miller <chrismill03@hotmail.com>
+    * @since     1.6.2
+    * @access    public
+    * @param     string   the table name
+    * @param     array    the update/insert data
+    * @return    string
+    */
+	function _duplicate_insert($table, $values)
+	{
+		$updatestr = array();
+		$keystr    = array();
+		$valstr    = array();
+
+		foreach($values as $key => $val)
+		{
+			$keystr[]    = $key;
+			$valstr[]    = $val;
+
+            if ($val != 0 && $val == "NULL"){
+                continue;
+            }
+            $updatestr[] = $key." = ".$val;
+		}
+		
+		$sql  = "INSERT INTO ".$this->_escape_identifiers($table)." (".implode(', ',$keystr).") ";
+		$sql .= "VALUES (".implode(', ',$valstr).") ";
+		$sql .= "ON DUPLICATE KEY UPDATE ".implode(', ',$updatestr);
+		debug(__FILE__, $sql);
+                                                                                    
+		return $sql;
+    }
+
 	// --------------------------------------------------------------------
 
 	/**
