@@ -11,5 +11,5 @@ if ( ENVIRONMENT == 'production' ){
 }else if ( ENVIRONMENT == 'development' ){
 	define('DB_HOST','localhost');
 	define('DB_USER','root');
-	define('DB_PASSWORD','HelloWorld');
+	define('DB_PASSWORD','');
 }
