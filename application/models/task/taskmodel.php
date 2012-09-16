@@ -29,7 +29,7 @@ class TaskModel extends BaseModel {
         if ( $complete != null ){
             $where['complete'] = $complete;
         }
-        return self::get( $where );
+        return self::sort_tasks(self::get( $where ));
     }
 
     function get_all_tasks_by_user_priority($user_id, $priority, $complete = null){
@@ -39,6 +39,25 @@ class TaskModel extends BaseModel {
         if ( $complete != null ){
             $where['complete'] = $complete;
         }
-        return self::get( $where );
+        return self::sort_tasks(self::get( $where ));
+    }
+
+    private function sort_tasks( $task_list ){
+        usort($task_list, "self::task_cmp");
+
+        return $task_list;
+    }
+
+    private function task_cmp( Task $a, Task $b ){
+
+        if ( $a->priority == $b->priority ){
+            if ( $a->due == $b->due ){
+                return 0;
+            }
+
+            return ($a->due < $b->due) ? -1 : 1;
+        }
+
+        return ($a->priority > $b->priority) ? -1 : 1;
     }
 }

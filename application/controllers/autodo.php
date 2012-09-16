@@ -53,37 +53,49 @@ class Autodo extends CI_Controller {
 			$task_obj->name = $event->name;
 			$task_obj->priority = -1;
 			$task_obj->timeslot = self::convert_timeslot_to_str( $event->start_time, $event->end_time );
-			$task_list[] = $task_obj;
+			$task_list[$event->start_time] = $task_obj;
 		}
 
 		if ( $start_time < 1440 ){
 			$free_time_segments[] = array($start_time, 1440);
 		}
 
-		$task_3 = new stdClass();
-		$task_3->name = "CS ASSIGNMENT";
-		$task_3->priority = 2;
-		$task_3->timeslot = "12:30PM-2:30PM";
-		
-		$task_5 = new stdClass();
-		$task_5->name = "CS ASSIGNMENT";
-		$task_5->priority = 2;
-		$task_5->timeslot = "5PM-8PM";
-		
-		$task_6 = new stdClass();
-		$task_6->name = "STUDY ANTHRO";
-		$task_6->priority = 1;
-		$task_6->timeslot = "8PM-9PM";
-		
-		$task_7 = new stdClass();
-		$task_7->name = "FREE TIME";
-		$task_7->priority = 0;
-		$task_7->timeslot = "9PM-11PM";
+		$unscheduled_tasks = $tasks;
 
-		$task_list[] = $task_3;
-		$task_list[] = $task_5;
-		$task_list[] = $task_6;
-		$task_list[] = $task_7;
+		foreach ( $free_time_segments as $segment ){
+			$segment_time_left = $segment[1]-$segment[0];
+			while ( count($unscheduled_tasks) > 0 && $segment_time_left > 0 ){
+				$cur_task = $unscheduled_tasks[0];
+
+				if ( $segment_time_left >= $cur_task->duration ){
+
+					$task_obj = new stdClass();
+					$task_obj->name = $cur_task->name;
+					$task_obj->priority = $cur_task->priority;
+					$task_obj->timeslot = self::convert_timeslot_to_str( $segment[0], $segment[0] + $cur_task->duration );
+					$task_list[$segment[0]] = $task_obj;
+
+					$segment_time_left -= $cur_task->duration;
+					$segment[0] += $cur_task->duration;
+
+					$unscheduled_tasks = array_slice($unscheduled_tasks, 1);
+				}else{
+					$cur_task->duration -= $segment_time_left;
+
+					$unscheduled_tasks[0] = $cur_task;
+
+					$task_obj = new stdClass();
+					$task_obj->name = $cur_task->name;
+					$task_obj->priority = $cur_task->priority;
+					$task_obj->timeslot = self::convert_timeslot_to_str( $segment[0], $segment[1] );
+					$task_list[$segment[0]] = $task_obj;
+
+					$segment_time_left = 0;
+				}
+			}
+		}
+
+		ksort($task_list);
 
 		$data['task_list'] = $task_list;
 
