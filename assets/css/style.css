@@ -48,19 +48,19 @@ body {
 }
 
 .priority-static{
-	background-color: #DBDBDB;	
+	background-color: #B5B5B5;	
 }
 
 .priority-high{
-	background-color: #FF7A45;	
+	background-color: #E68D27;	
 }
 
 .priority-low{
-	background-color: #E8DF79;	
+	background-color: #5bb75b;	
 }
 
 .priority-optional{
-	background-color: #FFFFFF;	
+	background-color: #49afcd;	
 }
 
 .navbar .nav > li > .btn{
@@ -73,6 +73,16 @@ body {
   line-height: 19px;
   padding: 15px 10px;
   font-size: 10px;
+}
+
+.title{
+	text-align: center;		
+}
+
+.tagline{
+	font-size: 24px;
+	text-align: center;
+  	color: #BFBFBF;
 }
 
 .ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }

@@ -29,6 +29,10 @@ class Autodo extends CI_Controller {
 	 */
 	public function index()
 	{
+        $user = self::get_logged_in_user(false);
+        if ( $user !== false ){
+        	redirect("autodo/schedule");
+        }
 		$this->load->view('home');
 	}
 

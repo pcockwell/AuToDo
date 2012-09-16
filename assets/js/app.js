@@ -7,6 +7,19 @@ var APP = APP || {};
 
 $(document).ready(function(){
 
+	if ( APP.hasOwnProperty("tasks") ){
+		var now = new Date();
+		var cur_time = now.getHours() * 60 + now.getMinutes();
+		for ( task_index in APP.tasks ){
+			var task = APP.tasks[task_index];
+			var task_timeslot = convert_str_to_timeslot(task.timeslot);
+			if ( cur_time >= task_timeslot[0] && cur_time < task_timeslot[1] ){
+    			populate_info_bar(task, "activity");
+    			break;
+			} 
+		}
+	}
+
 	$('.save-task').click(function() {
 		var data = {};
 		$("#add-task").find(".controls").children().each( function(index, element){
@@ -40,10 +53,29 @@ $(document).ready(function(){
     	minDate: "0d"
     });
 
-    $(".activity").click(function(eventObj){
-    	var task_name = eventObj.srcElement.innerText;
-    	var index = $(".activity").index(eventObj.srcElement);
-    	var task = APP.tasks[index];
+    $(".row-fluid").click(function(eventObj){
+    	var task;
+    	var type;
+    	if ( $(eventObj.srcElement).parent().has(".conflict").length > 0 ){
+	    	var task_name = $(eventObj.srcElement).parent().children(".conflict")[0].innerText;
+	    	conflict_index = $(".warning-bar").children(".row-fluid").index($(eventObj.srcElement).parent());
+			task = APP.conflicts[conflict_index];
+			type = "conflict";
+    		
+    	}else if ( $(eventObj.srcElement).parent().has(".activity").length > 0 ){
+	    	var task_name = $(eventObj.srcElement).parent().children(".activity")[0].innerText;
+	    	activity_index = $(".schedule").children(".row-fluid").index($(eventObj.srcElement).parent());
+			task = APP.tasks[activity_index];
+			type = "activity";
+    	}else{
+    		return;
+    	}
+
+    	populate_info_bar(task, type);
+    });
+});
+
+function populate_info_bar( task, type ){
 
     	$(".info-bar").empty();
 
@@ -64,6 +96,14 @@ $(document).ready(function(){
 				  	break;
 			}
     		$(".info-bar").append("<p>Priority: " + priority_text + "</p>");
+    	}
+
+    	if ( type == "conflict" && task.hasOwnProperty("duration") ){
+
+		    var hours = Math.floor( task.duration / 60);          
+		    var minutes = task.duration % 60;
+    		$(".info-bar").append("<p>Duration: " + hours + ":" + pad(minutes,2) + "</p>");
+
     	}
 
     	if ( task.hasOwnProperty("timeslot") ){
@@ -108,46 +148,36 @@ $(document).ready(function(){
     	}
 
     	if ( task.hasOwnProperty("duration_remaining") ){
-
-		    var hours = Math.floor( task.duration_remaining / 60);          
+    		var hours = Math.floor( task.duration_remaining / 60);          
 		    var minutes = task.duration_remaining % 60;
-    		$(".info-bar").append("<p>Task Time Remaining: " + hours + ":" + minutes + "</p>");
+    		$(".info-bar").append("<p>Task Time Remaining: " + hours + ":" + pad(minutes,2) + "</p>");
 
     	}
-    });
 
-    $(".conflict").click(function(eventObj){
-    	var task_name = eventObj.srcElement.innerText;
-    	var index = $(".conflict").index(eventObj.srcElement);
-    	var task = APP.conflicts[index];
+}
 
-    	$(".info-bar").empty();
+function pad(number, length) {
+   
+    var str = '' + number;
+    while (str.length < length) {
+        str = '0' + str;
+    }
+   
+    return str;
 
-    	$(".info-bar").append("<h4>" + task.name + "</h4>");
+}
 
-    	if ( task.hasOwnProperty("priority") && task.priority < 3 ){
-    		var priority_text = "";
+function convert_str_to_timeslot(timestr){
 
-			switch(task.priority){
-				case 0:
-					priority_text += "Optional";
-				 	break;
-				case 1:
-					priority_text += "Low";
-				  	break;
-				case 2:
-					priority_text += "High";
-				  	break;
-			}
-    		$(".info-bar").append("<p>Priority: " + priority_text + "</p>");
-    	}
+	var times = timestr.split("-");
 
-    	if ( task.hasOwnProperty("timeslot") ){
-    		$(".info-bar").append("<p>Timeslot: " + task.timeslot + "</p>");
-    	}
+	var ret = [];
 
-    	if ( task.hasOwnProperty("due") ){
-    		$(".info-bar").append("<p>Due: " + task.due + "</p>");
-    	}
-    });
-});
+	for ( i in times ){
+		var hr = parseInt(times[i].split(":")[0]);
+		var min = parseInt(times[i].split(":")[1]);
+		ret.push( hr * 60 + min );
+	}
+
+	return ret;
+}

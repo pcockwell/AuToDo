@@ -42,11 +42,7 @@ $this->load->view('header');
     <?php if ( !is_null($conflicts) ): ?>
     <div class="row-fluid">
         <div class="span12 warning-bar">
-            <div class="row-fluid">
-                <div class="span12">
-                    We've detected conflicts due to deadlines and were unable to schedule the following tasks:
-                </div>
-            </div>
+            <p>We've detected conflicts due to deadlines and were unable to schedule the following tasks:</p>
             <?php foreach ($conflicts as $conflict_task): ?>
             <div class="row-fluid">
                 <div class="span12 conflict">
