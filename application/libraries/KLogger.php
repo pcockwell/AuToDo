@@ -80,14 +80,14 @@
 
             $this->_logFile  = $logDirectory
                                . DIRECTORY_SEPARATOR
-                               . $CI->orion_config['LOG_FILE_BASE']
+                               . 'autodo'
                                . '-'
                                . date('Y-m-d')
                                . '.log';
 
             $this->_exceptionLogFile  = $logDirectory
                                . DIRECTORY_SEPARATOR
-                               . $CI->orion_config['LOG_FILE_BASE']
+                               . 'autodo'
                                . '-errors-'
                                . date('Y-m-d')
                                . '.log';

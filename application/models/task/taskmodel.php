@@ -3,7 +3,7 @@
 require_once(dirname(__FILE__) . '/Task.php');
 require_once(APPPATH . 'models/basemodel.php');
 
-class UserModel extends BaseModel {
+class TaskModel extends BaseModel {
 
     protected $table_name = 'task';
 

@@ -10,7 +10,7 @@ if (!defined('log_helper')) {
     function info($file, $message)
     {
         $CI =& get_instance();
-        $logger = KLogger::instance($CI->orion_config['LOG_DIRECTORY'], 1);
+        $logger = KLogger::instance(LOG_DIRECTORY, 1);
         $file_segments = explode('/', $file);
         $logger->logInfo(end($file_segments) . ' - ' . $message);
     }
@@ -18,7 +18,7 @@ if (!defined('log_helper')) {
     function debug($file, $message)
     {
         $CI =& get_instance();
-        $logger = KLogger::instance($CI->orion_config['LOG_DIRECTORY'], 1);
+        $logger = KLogger::instance(LOG_DIRECTORY, 1);
         $file_segments = explode('/', $file);
         $logger->logDebug(end($file_segments) . ' - ' . $message);
     }
@@ -26,7 +26,7 @@ if (!defined('log_helper')) {
     function warn($file, $message)
     {
         $CI =& get_instance();
-        $logger = KLogger::instance($CI->orion_config['LOG_DIRECTORY'], 1);
+        $logger = KLogger::instance(LOG_DIRECTORY, 1);
         $file_segments = explode('/', $file);
         $logger->logWarn(end($file_segments) . ' - ' . $message);
     }
@@ -35,7 +35,7 @@ if (!defined('log_helper')) {
     {
 
         $CI =& get_instance();
-        $logger = KLogger::instance($CI->orion_config['LOG_DIRECTORY'], 1);
+        $logger = KLogger::instance(LOG_DIRECTORY, 1);
         $file_segments = explode('/', $file);
 
         try {
@@ -55,7 +55,7 @@ if (!defined('log_helper')) {
     function fatal($file, $message)
     {
         $CI =& get_instance();
-        $logger = KLogger::instance($CI->orion_config['LOG_DIRECTORY'], 1);
+        $logger = KLogger::instance(LOG_DIRECTORY, 1);
         $file_segments = explode('/', $file);
         $logger->logFatal(end($file_segments) . ' - ' . $message);
     }
