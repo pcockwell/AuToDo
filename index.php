@@ -199,7 +199,15 @@ if (defined('ENVIRONMENT'))
  * And away we go...
  *
  */
+require_once(APPPATH . 'libraries/google-api-php-client/src/apiClient.php');
+require_once(APPPATH . 'libraries/google-api-php-client/src/contrib/apiOauth2Service.php');
 require_once BASEPATH.'core/CodeIgniter.php';
+
+require_once(APPPATH . 'libraries/error_handler.php');
+//handle and log errors
+set_error_handler('handle_error');
+register_shutdown_function('handle_shutdown_error');
+set_exception_handler('handle_uncaught_exception');
 
 /* End of file index.php */
 /* Location: ./index.php */

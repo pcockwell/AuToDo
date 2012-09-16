@@ -24,8 +24,18 @@
                 <a class="brand" href="<?php echo base_url();?>index.php">AuToDo</a>
 
                 <ul class="nav pull-right">
-                    <li><a data-toggle="modal" href="#add-task" class="btn btn-success add-task"><i class="icon-white icon-plus"></i></a></li>
-                    <li><a href="<?php echo base_url();?>" class="btn btn-info">Log In</a></li>
+
+                    <?php if (isset($user)): ?>
+                        <li class="login_info"><?php echo $user->name; ?></li>
+                        <li><a data-toggle="modal" href="#add-task" class="btn btn-success add-task"><i class="icon-white icon-plus"></i></a></li>
+                    <?php endif ?>
+                    <li><a href="<?php echo base_url();?>index.php/authenticate" class="btn btn-info">
+                        <?php if (isset($user)){
+                            echo "Logout";
+                        }else{
+                            echo "Log In";
+                        } ?>
+                    </a></li>
                 </ul>
 
             </div>

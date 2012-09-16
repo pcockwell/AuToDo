@@ -1,15 +1,22 @@
 .schedule{
 	background-color: #DCEAF4;
 	border-radius: 3px;
+	padding-bottom: 8px;
+	padding-left: 8px;
 }
 
 .info-bar{
 	background-color: #BBD8E9;
 	border-radius: 3px;
+	padding-bottom: 8px;
+	padding-left: 8px;
 }
 
-[class*="span"] {
-	padding-bottom: 8px;
+.warning-bar{
+	background-color: #EDD968;
+	border-radius: 3px;
+	margin-top: 10px;
+	padding-top: 8px;
 	padding-left: 8px;
 }
 
@@ -59,6 +66,13 @@ body {
 .navbar .nav > li > .btn{
 	color: #FFF;
 	margin: 5px;
+}
+
+.login_info {
+  color: #c7c7c7;
+  line-height: 19px;
+  padding: 15px 10px;
+  font-size: 10px;
 }
 
 .ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }

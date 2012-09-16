@@ -35,6 +35,10 @@ class FixedEventModel extends BaseModel {
         $where = array('user_id' => $user_id, 'start_date <=' => $date, 'end_date >' => $date);
         $events = self::get( $where );
 
+        if ( empty($events) ){
+            return $events;
+        }
+
         $valid_events = array();
         $day_of_week = intval( date('w', strtotime($date) ) );
 

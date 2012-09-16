@@ -21,4 +21,34 @@ class UserModel extends BaseModel {
 
         return self::get();
     }
+
+    function get_user_by_email($email){
+
+        debug(__FILE__, "get_user_by_email() is called for UserModel");
+
+        $users = self::get( array( "email" => $email ) );
+        if ( empty($users) ){
+            return null;
+        }
+        return $users[0];
+    }
+
+    function get_or_create_user($email, $name){
+        $existing_user = self::get_user_by_email($email);
+        if ( !is_null($existing_user) ){
+            return $existing_user;
+        }
+
+        $new_user = self::create();
+        $new_user->email = $email;
+        $new_user->name = $name;
+        if ( $this->save($new_user) ){
+            $new_user->id = $this->last_insert_id();
+        }else{
+            printr("ERROR SAVING USER");
+        }
+
+        return $new_user;
+
+    }
 }

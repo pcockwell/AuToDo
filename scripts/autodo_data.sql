@@ -74,7 +74,7 @@ CREATE TABLE `task` (
 
 LOCK TABLES `task` WRITE;
 /*!40000 ALTER TABLE `task` DISABLE KEYS */;
-INSERT INTO `task` VALUES (1,1,'CS Assignment',0,'2012-09-16 19:00:00',300,0),(2,1,'Anthropology Reading',1,'2012-09-16 19:30:00',60,0),(3,1,'Free Time',2,'2012-09-16 20:00:00',150,0);
+INSERT INTO `task` VALUES (1,1,'Play Golf',0,'2012-09-18 00:00:00',300,0),(2,1,'Anthropology Reading',1,'2012-09-18 20:00:00',60,0),(3,1,'CS Assignment',2,'2012-09-17 20:00:00',150,0);
 /*!40000 ALTER TABLE `task` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -88,9 +88,10 @@ DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `email` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -99,7 +100,7 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (1,'pcockwell@gmail.com');
+INSERT INTO `user` VALUES (1,'pcockwell@gmail.com','Patrick Cockwell'),(2,'paradox870@gmail.com','Patrick Cockwell');
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -112,4 +113,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2012-09-16  2:34:06
+-- Dump completed on 2012-09-16 13:09:26
