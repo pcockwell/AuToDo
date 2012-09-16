@@ -9,7 +9,7 @@ class Task extends BaseEntity {
         "user_id"	=> array("int", "none", false),
         "name" 	    => array("string", "none", false),
         "priority"	=> array("int", "none", false),
-        "due" 	    => array("int", "none", false),
+        "due" 	    => array("timestamp", "none", false),
         "duration"	=> array("int", "none", false),
         "complete" 	=> array("int", "none", false)
     );

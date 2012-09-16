@@ -50,14 +50,14 @@ class TaskModel extends BaseModel {
 
     private function task_cmp( Task $a, Task $b ){
 
-        if ( $a->priority == $b->priority ){
-            if ( $a->due == $b->due ){
+        if ( strtotime($a->due) == strtotime($b->due) ){
+            if ( $a->priority == $b->priority ){
                 return 0;
             }
 
-            return ($a->due < $b->due) ? -1 : 1;
+            return ($a->priority > $b->priority) ? -1 : 1;
         }
 
-        return ($a->priority > $b->priority) ? -1 : 1;
+        return (strtotime($a->due) < strtotime($b->due)) ? -1 : 1;
     }
 }

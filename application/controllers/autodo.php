@@ -1,12 +1,14 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 class Autodo extends CI_Controller {
+	private $now;
 
 	public function __construct(){
         parent::__construct();
         $this->load->model('user/UserModel');
         $this->load->model('task/TaskModel');
         $this->load->model('fixed_event/FixedEventModel');
+        $this->load->helper('time');
 	}
 
 	/**
@@ -27,8 +29,8 @@ class Autodo extends CI_Controller {
 	public function index()
 	{
 
-		$now = strtotime("2012-09-17 8:00:00");
-		$today = date("Y-m-d H:i:s", $now);
+		$this->now = strtotime("2012-09-16 8:00:00");
+		$today = date("Y-m-d H:i:s", $this->now);
 
 		$utilization = 0;
 		$task_list = array();
@@ -51,8 +53,8 @@ class Autodo extends CI_Controller {
 
 			$task_obj = new stdClass();
 			$task_obj->name = $event->name;
-			$task_obj->priority = -1;
-			$task_obj->timeslot = self::convert_timeslot_to_str( $event->start_time, $event->end_time );
+			$task_obj->priority = 3;
+			$task_obj->timeslot = convert_timeslot_to_str( $event->start_time, $event->end_time );
 			$task_list[$event->start_time] = $task_obj;
 		}
 
@@ -62,58 +64,88 @@ class Autodo extends CI_Controller {
 
 		$unscheduled_tasks = $tasks;
 
-		foreach ( $free_time_segments as $segment ){
-			$segment_time_left = $segment[1]-$segment[0];
-			while ( count($unscheduled_tasks) > 0 && $segment_time_left > 0 ){
-				$cur_task = $unscheduled_tasks[0];
-
-				if ( $segment_time_left >= $cur_task->duration ){
-
-					$task_obj = new stdClass();
-					$task_obj->name = $cur_task->name;
-					$task_obj->priority = $cur_task->priority;
-					$task_obj->timeslot = self::convert_timeslot_to_str( $segment[0], $segment[0] + $cur_task->duration );
-					$task_list[$segment[0]] = $task_obj;
-
-					$segment_time_left -= $cur_task->duration;
-					$segment[0] += $cur_task->duration;
-
-					$unscheduled_tasks = array_slice($unscheduled_tasks, 1);
-				}else{
-					$cur_task->duration -= $segment_time_left;
-
-					$unscheduled_tasks[0] = $cur_task;
-
-					$task_obj = new stdClass();
-					$task_obj->name = $cur_task->name;
-					$task_obj->priority = $cur_task->priority;
-					$task_obj->timeslot = self::convert_timeslot_to_str( $segment[0], $segment[1] );
-					$task_list[$segment[0]] = $task_obj;
-
-					$segment_time_left = 0;
-				}
-			}
-		}
-
-		ksort($task_list);
+		$task_list = self::make_schedule($task_list, $unscheduled_tasks, $free_time_segments);
 
 		$data['task_list'] = $task_list;
 
 		$this->load->view('home', $data);
 	}
 
-	private function convert_timeslot_to_str($start_time, $end_time){
-		$start_hr = intval($start_time / 60);
-		$start_min = $start_time % 60;
+	private function make_schedule($task_list, $unscheduled_tasks, $free_time_segments){
 
-		$start_str = sprintf("%02d", $start_hr) . ":" . sprintf("%02d", $start_min);
+		$scheduled_tasks = array();
 
-		$end_hr = intval($end_time / 60);
-		$end_min = $end_time % 60;
+		foreach ( $free_time_segments as $segment ){
+			$seg_start = $segment[0];
+			$seg_end = $segment[1];
+			$segment_time_left = $seg_end-$seg_start;
+			while ( count($unscheduled_tasks) > 0 && $segment_time_left > 0 ){
+				$cur_task = $unscheduled_tasks[0];
+				if ( !property_exists($cur_task, "duration_remaining") ){
+					$cur_task->duration_remaining = $cur_task->duration;
+				}
 
-		$end_str = sprintf("%02d", $end_hr) . ":" . sprintf("%02d", $end_min);
+				if ( $segment_time_left >= $cur_task->duration_remaining ){
 
-		return $start_str . "-" . $end_str;
+					$task_obj = new stdClass();
+					$task_obj->name = $cur_task->name;
+					$task_obj->priority = $cur_task->priority;
+					$task_obj->timeslot = convert_timeslot_to_str( $seg_start, $seg_start + $cur_task->duration_remaining );
+					$task_list[$seg_start] = $task_obj;
+
+					$scheduled_tasks[$seg_start] = $cur_task;
+
+					$segment_time_left -= $cur_task->duration_remaining;
+					$seg_start += $cur_task->duration_remaining;
+
+					$unscheduled_tasks = array_slice($unscheduled_tasks, 1);
+				}else{
+					$cur_task->duration_remaining -= $segment_time_left;
+
+					$unscheduled_tasks[0] = $cur_task;
+
+					$task_obj = new stdClass();
+					$task_obj->name = $cur_task->name;
+					$task_obj->priority = $cur_task->priority;
+					$task_obj->timeslot = convert_timeslot_to_str( $seg_start, $seg_end );
+					$task_list[$seg_start] = $task_obj;
+
+					$segment_time_left = 0;
+				}
+
+				$task_segment_finished = ($segment_time_left > 0) ? $seg_start : $seg_end;
+
+				if ( convert_minute_value_to_time( $task_segment_finished, date("y-m-d", $this->now) ) > strtotime($cur_task->due) ){
+
+					$cur_lowest_priority_task = $cur_task;
+
+					foreach ( $scheduled_tasks as $i => $task ){
+						if ( $task->priority < $cur_task->priority && $task->priority < $cur_lowest_priority_task->priority ){
+							$cur_lowest_priority_task = $task;
+						}
+						unset($task_list[$i]);
+					}
+
+					printr("SCHEDULING PROBLEM - DROPPING FOLLOWING TASK:");
+					printr($cur_lowest_priority_task);
+
+					foreach ( $scheduled_tasks as $task ){
+						if ( $task != $cur_lowest_priority_task ){
+							unset($task->duration_remaining);
+							array_unshift($unscheduled_tasks, $task);
+						}
+					}
+					
+					return self::make_schedule($task_list, $unscheduled_tasks, $free_time_segments);
+
+				}
+			}
+		}
+
+		ksort($task_list);
+
+		return $task_list;
+
 	}
 }
 
