@@ -13,10 +13,21 @@ $(document).ready(function(){
 		for ( task_index in APP.tasks ){
 			var task = APP.tasks[task_index];
 			var task_timeslot = convert_str_to_timeslot(task.timeslot);
+			var task_found = false;
 			if ( cur_time >= task_timeslot[0] && cur_time < task_timeslot[1] ){
     			populate_info_bar(task, "activity");
+				task_found = true;
     			break;
-			} 
+			}
+		}
+		if ( task_found == false ){
+
+    		$(".info-bar").empty();
+
+    		$(".info-bar").append("<h4>Time Off</h4>");
+
+    		$(".info-bar").append("<p>You have some free time! Enjoy it :D</p>");
+			
 		}
 	}
 
