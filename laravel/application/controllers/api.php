@@ -1,6 +1,8 @@
 <?php
 
-class Home_Controller extends Base_Controller {
+class Api_Controller extends Base_Controller {
+
+	public $restful = true;
 
 	/*
 	|--------------------------------------------------------------------------
@@ -30,9 +32,14 @@ class Home_Controller extends Base_Controller {
 	|
 	*/
 
-	public function action_index()
+	public function get_index()
 	{
 		return View::make('home.index');
+	}
+
+	public function post_index()
+	{
+		return '{a:"1"}';
 	}
 
 }
