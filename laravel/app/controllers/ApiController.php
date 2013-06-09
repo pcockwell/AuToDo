@@ -11,4 +11,8 @@ class ApiController extends BaseController {
 		return "Hello $name";
 	}
 
+	public function get_name($name){
+		return "Hello $name";
+	}
+
 }
