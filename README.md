@@ -16,7 +16,7 @@ Setup instructions
 
 ```
 <VirtualHost *:80>
-    DocumentRoot "/path/to/webserver/autodo/laravel/public"
+    DocumentRoot "/path/to/webserver/autodo/public"
     ServerName autodo
 </VirtualHost>
 ```
