@@ -15,4 +15,8 @@ class ApiController extends BaseController {
 		return "Hello $name";
 	}
 
+	public function missingMethod($parameters){
+		$user = User::getTestUser();
+		return "Hello $user->name";
+	}
 }
