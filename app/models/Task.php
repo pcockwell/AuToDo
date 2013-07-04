@@ -9,4 +9,10 @@ class Task extends Eloquent {
 	 */
 	protected $table = 'tasks';
 
+	protected $fillable = array('user_id', 'name', 'priority', 'due', 'duration', 'complete');
+
+	public function getDates(){
+		return array('created_at', 'updated_at', 'due');
+	}
+
 }
