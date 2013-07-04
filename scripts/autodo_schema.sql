@@ -19,6 +19,7 @@
 -- Table structure for table `fixed_event`
 --
 
+LOCK TABLES `fixed_events` WRITE;
 DROP TABLE IF EXISTS `fixed_events`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -28,19 +29,23 @@ CREATE TABLE `fixed_events` (
   `name` varchar(255) NOT NULL,
   `start_time` int(11) NOT NULL,
   `end_time` int(11) NOT NULL,
-  `start_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `end_date` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `start_date` datetime NOT NULL DEFAULT NOW(),
+  `end_date` datetime NOT NULL,
   `recurrences` varchar(255) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT NOW(),
+  `updated_at` datetime NOT NULL DEFAULT NOW(),
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `fixed_event_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `task`
 --
 
+LOCK TABLES `tasks` WRITE;
 DROP TABLE IF EXISTS `tasks`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -49,19 +54,23 @@ CREATE TABLE `tasks` (
   `user_id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
   `priority` int(11) NOT NULL,
-  `due` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `due` datetime NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   `duration` int(11) NOT NULL,
   `complete` int(11) NOT NULL DEFAULT '0',
+  `created_at` datetime NOT NULL DEFAULT NOW(),
+  `updated_at` datetime NOT NULL DEFAULT NOW(),
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `task_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `user`
 --
 
+LOCK TABLES `users` WRITE;
 DROP TABLE IF EXISTS `users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -69,21 +78,22 @@ CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `email` varchar(255) NOT NULL,
   `name` varchar(255) NOT NULL,
-  `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT NOW(),
+  `updated_at` datetime NOT NULL DEFAULT NOW(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
+UNLOCK TABLES;
 
 --
 -- Dumping data for table `users`
 --
 
 LOCK TABLES `users` WRITE;
-/*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'test@example.com','Test User');
-/*!40000 ALTER TABLE `user` ENABLE KEYS */;
+/*!40000 ALTER TABLE `users` DISABLE KEYS */;
+INSERT INTO `users` VALUES (1,'test@example.com','Test User', NOW(), NOW());
+/*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
