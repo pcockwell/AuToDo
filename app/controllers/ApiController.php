@@ -42,68 +42,9 @@ class ApiController extends BaseController {
 //             start - after which time all tasks should be scheduled
 //             break - minimum break time between tasks
 
-    public function get_testschedule() {
-        $data = json_decode( '
-            {
-                "tasks" : [
-                    {
-                        "name" : "name1",
-                        "due" : 1000,
-                        "duration" : 40,
-                        "priority" : 1
-                    },
-                    {
-                        "name" : "name2",
-                        "due" : 1000,
-                        "duration" : 60,
-                        "priority" : 0
-                    },
-                    {
-                        "name" : "name3",
-                        "due" : 1000,
-                        "duration" : 30,
-                        "priority" : 3
-                    },
-                    {
-                        "name" : "name4",
-                        "due" : 1000,
-                        "duration" : 30,
-                        "priority" : 1
-                    }
-                ],
-                "prefs" : {
-                    "start" : "10",
-                    "break" : "100"
-                }
-            }
-        ', true );
-
-        $tasks = array();
-        foreach( $data[ "tasks" ] as $task ) {
-            $task_obj = new stdClass();
-            $task_obj->name = $task[ "name" ];
-            $task_obj->duration = $task[ "duration" ];
-            if( isset( $task[ "start" ] ) ) {
-                $task_obj->start = $task[ "start" ];
-                $task_obj->end = $task[ "end" ];
-                $task_obj->priority = $this->task_max_priority+1;
-                $task_obj->due = $task[ "end" ];
-            }
-            else {
-                $task_obj->priority = $task[ "priority" ];
-                $task_obj->due = $task[ "due" ];
-            }
-            $tasks[ $task[ "name" ] ] = $task_obj;
-        }
-        $prefs = $data[ "prefs" ];
-
-        self::createSchedule( $tasks, $prefs );
-
-        return "" . print_r( $this->schedule );
-//         return "TASKS:<br>" . print_r( $tasks ) .
-//                "<br>PREFS:<br>" . print_r( $prefs ) .
-//                "<br>CONFLICTS:<br>" . print_r( $this->conflicts ) .
-//                "<br>SCHE:<br>" . print_r( $this->schedule );
+    // Make max priority accessible.
+    public function getMaxPriority() {
+        return $this->task_max_priority;
     }
 
 	public function missingMethod($parameters){
@@ -188,6 +129,9 @@ class ApiController extends BaseController {
             }
 
         }
+
+        // Return the schedule to the caller.
+        return $this->schedule;
     }
 
     // Sort tasks based on priority, and sort by due date within each priority.
