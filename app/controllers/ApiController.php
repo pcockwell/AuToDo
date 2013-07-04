@@ -47,6 +47,33 @@ class ApiController extends BaseController {
         return $this->task_max_priority;
     }
 
+    public function post_schedule() {
+        if (Request::is('api/schedule*')) {
+            if (Input::isJson()) {
+                // valid json request
+                $data = Input::all();
+                // error checking omitted
+                $tasks_obj_arr = null;
+                $prefs = null;
+                if (isset($data['tasks'])) {
+                    $tasks = $data['tasks'];
+                    $tasks_obj = json_decode(json_encode($tasks), false);
+                    foreach ($tasks_obj as $obj) {
+                        $tasks_obj_arr[$obj->name] = $obj;
+                    }
+                } else if (isset($data['prefs'])) {
+                    $prefs = $data['prefs'];
+                }
+                $sch = $this->createSchedule($tasks_obj_arr, $prefs);
+                var_dump($sch);
+            } else {
+                // prepare a response, unsupported POST content
+            }
+        }
+        // prepare a 200 OK response
+        return;
+    }
+
 	public function missingMethod($parameters){
 		$user = User::getTestUser();
 		return "Hello $user->name";
