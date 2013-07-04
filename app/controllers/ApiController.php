@@ -12,13 +12,27 @@ class ApiController extends BaseController {
 		return View::make('hello');
 	}
 
-	public function getHello($name){
-		return "Hello $name";
+    public function missingMethod($parameters){
+        $user = User::getTestUser();
+        return "Hello $user->name";
+    }
+
+	public function getHello(){
+		return "Hello " . User::getTestUser()->name;
 	}
 
 	public function get_name($name){
 		return "Hello $name";
 	}
+
+    public function get_phpinfo(){
+        phpinfo();
+    }
+
+    // Make max priority accessible.
+    public function getMaxPriority() {
+        return $this->task_max_priority;
+    }
 
     // This is just a test function with hardcoded JSON data.
     // Expected end result would be to call the createSchedule( $tasks, $prefs ) method,
@@ -42,15 +56,61 @@ class ApiController extends BaseController {
 //             start - after which time all tasks should be scheduled
 //             break - minimum break time between tasks
 
-    // Make max priority accessible.
-    public function getMaxPriority() {
-        return $this->task_max_priority;
-    }
+    public function get_testschedule() {
+        $data = json_decode( '
+            {
+                "tasks" : [
+                    {
+                        "user_id" : 1,
+                        "name" : "name1",
+                        "due" : "2013-12-04 12:00:00",
+                        "duration" : 40,
+                        "priority" : 1
+                    },
+                    {
+                        "user_id" : 1,
+                        "name" : "name2",
+                        "due" : "2013-12-04 12:00:00",
+                        "duration" : 60,
+                        "priority" : 0
+                    },
+                    {
+                        "user_id" : 1,
+                        "name" : "name3",
+                        "due" : "2013-12-04 12:00:00",
+                        "duration" : 30,
+                        "priority" : 3
+                    },
+                    {
+                        "user_id" : 1,
+                        "name" : "name4",
+                        "due" : "2013-12-04 12:00:00",
+                        "duration" : 30,
+                        "priority" : 1
+                    }
+                ],
+                "prefs" : {
+                    "start" : "2013-7-04 12:00:00",
+                    "break" : "100"
+                }
+            }
+        ', true );
 
-	public function missingMethod($parameters){
-		$user = User::getTestUser();
-		return "Hello $user->name";
-	}
+        $tasks = array();
+        foreach( $data[ "tasks" ] as $task ) {
+            $task_obj = Task::create($task);
+            $tasks[ $task_obj->name ] = $task_obj;
+        }
+        $prefs = $data[ "prefs" ];
+
+        self::createSchedule( $tasks, $prefs );
+
+        return "" . print_r( $this->schedule );
+//         return "TASKS:<br>" . print_r( $tasks ) .
+//                "<br>PREFS:<br>" . print_r( $prefs ) .
+//                "<br>CONFLICTS:<br>" . print_r( $this->conflicts ) .
+//                "<br>SCHE:<br>" . print_r( $this->schedule );
+    }
 
     // Populate schedule with tasks
     // Input: prioritized_tasks from self::sortTasks
@@ -188,14 +248,14 @@ class ApiController extends BaseController {
     private function nextTimeSlot( $task_duration, $task_due ) {
         ksort( $this->empty_slots );
         foreach( $this->empty_slots as $start => $duration ) {
+            if( $start > $task_due ) {
+                break;
+            }
             if( $start+$task_duration <= $task_due ) {
                 if( $duration == -1 || $duration >= $task_duration ) {
                     return array( "start" => $start,
                                   "duration" => $duration );
                 }
-            }
-            if( $start > $task_due ) {
-                break;
             }
         }
 
