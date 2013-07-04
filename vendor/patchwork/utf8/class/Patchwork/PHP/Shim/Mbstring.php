@@ -99,9 +99,6 @@ class Mbstring
             $from_encoding = 'UTF-8';
         }
 
-    //TODO REMOVE ASAP
-        print $to_encoding."\n";
-
         return iconv($from_encoding, $to_encoding . '//IGNORE', $s);
     }
 
