@@ -20,7 +20,10 @@ Route::get('users', function()
     return View::make('users')->with('users', $users);
 });
 
+// Controller to handle user accounts.
+Route::controller('user', 'UserController');
 
+// Controller for base API function.
 Route::controller('api', 'ApiController');
 
 //Must always be the last entry in the file
