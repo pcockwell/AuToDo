@@ -24,3 +24,14 @@ Setup instructions
 5. Install [composer](http://www.getcomposer.org)
 6. Go to the laravel directory and run 'composer install'
 7. Go to http://autodo/
+
+Future of AuToDo
+----------------
+
+* Documentation
+* Additional input style support (XML)
+
+Application Ideas
+-----------------
+
+* Google calendar plugin
