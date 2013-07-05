@@ -108,7 +108,7 @@ class ScheduleCreationTest extends TestCase {
 
         //Make sure to fix the key orderings for #5 and #4 when we fix the display ordering
         $correct_tasks = 0;
-        foreach( $json_response as $key => $timeslot ) {
+        foreach( $schedule as $key => $timeslot ) {
             if( $key == 0 ) {
                 $this->assertTrue($timeslot['start']->eq(new Carbon('2013-07-05 00:00:00')));
                 $this->assertTrue($timeslot['end']->eq(new Carbon('2013-07-05 07:00:00')));
