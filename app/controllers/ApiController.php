@@ -35,6 +35,7 @@ class ApiController extends BaseController {
     }
 
     public function post_schedule() {
+        $sch = null;
         if (Request::is('api/schedule*')) {
             if (Input::isJson()) {
                 // valid json request
@@ -48,17 +49,23 @@ class ApiController extends BaseController {
                     foreach ($tasks_obj as $obj) {
                         $tasks_obj_arr[$obj->name] = $obj;
                     }
-                } else if (isset($data['prefs'])) {
+                }
+
+                if (isset($data['prefs'])) {
                     $prefs = $data['prefs'];
                 }
                 $sch = $this->createSchedule($tasks_obj_arr, $prefs);
-                var_dump($sch);
             } else {
                 // prepare a response, unsupported POST content
+                $invalid_text = 'The request could not be fulfilled.\n
+                    An unsupported content type was used.';
+                $response = Response::make( $invalid_text, 400 );
+                return $response;
             }
         }
         // prepare a 200 OK response
-        return;
+        $response = Response::make( $sch, 200 );
+        return $response;
     }
 
     // This is just a test function with hardcoded JSON data.

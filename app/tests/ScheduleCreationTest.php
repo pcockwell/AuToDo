@@ -101,4 +101,77 @@ class ScheduleCreationTest extends TestCase {
         $this->assertTrue($correct_tasks == 4);
     }
 
+
+    public function testApi_PostScheduleSuccess()
+    {
+        $content = '
+            {
+                "tasks":[
+                    {
+                        "name" : "name1",
+                        "due" : 1000,
+                        "duration" : 40,
+                        "priority" : 1
+                    },
+                    {
+                        "name" : "name2",
+                        "due" : 1000,
+                        "duration" : 60,
+                        "priority" : 0
+                    },
+                    {
+                        "name" : "name3",
+                        "due" : 1000,
+                        "duration" : 30,
+                        "priority" : 3
+                    },
+                    {
+                        "name" : "name4",
+                        "due" : 1000,
+                        "duration" : 30,
+                        "priority" : 1
+                    }
+                ],
+
+                "prefs": {
+                    "start" : "10",
+                    "break" : "100"
+                }
+            }
+        ';
+
+        $response = $this->call('POST', 'api/schedule', 
+            array(), array(), array('CONTENT_TYPE' => 'application/json'),
+            $content);
+
+        $json_response = json_decode($response->getContent());
+
+        // Make sure that the tasks are in the correct scheduled order
+        // with the correct start times.
+        $correct_tasks = 0;
+        foreach( $json_response as $start => $the_task ) {
+            if( $start == 10 ) {
+                $this->assertTrue($the_task->name == "name3");
+                $correct_tasks++;
+            } else if( $start == 140 ) {
+                $this->assertTrue($the_task->name == "name1");
+                $correct_tasks++;
+            } else if( $start == 280 ) {
+                $this->assertTrue($the_task->name == "name4");
+                $correct_tasks++;
+            } else if( $start == 410 ) {
+                $this->assertTrue($the_task->name == "name2");
+                $correct_tasks++;
+            }
+        }
+
+        // Ensure that we got 4 correct tasks.
+        $this->assertTrue($correct_tasks == 4);
+    }
+
+    public function testApi_PostScheduleUnsupportedContentType() {
+
+        $this->call('POST', 'api/schedule');
+        $this->assertResponseStatus(400);
+    }
 }

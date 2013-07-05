@@ -13,7 +13,7 @@ class SmokeTest extends TestCase {
     public function testServerUp()
     {
         $test_name = 'TEST';
-        $response = $this->call('GET', 'api/hello/'.$test_name);
+        $response = $this->call('GET', 'api/name/'.$test_name);
         $this->assertEquals('Hello '.$test_name, 
             $response->getContent());
     }
