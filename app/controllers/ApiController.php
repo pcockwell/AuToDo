@@ -224,8 +224,8 @@ class ApiController extends BaseController {
                 if ($sched_start > $task_due){
                     continue;
                 }
-                $task_data = $tasks[ $task_name ];
-                $remaining_task_time = $task_data->duration;
+                $task_data = $tasks[ $task_name ]->toArray();
+                $remaining_task_time = $task_data['duration'];
                 while($sched_start < $end_of_day){
                     foreach( $this->schedule as $key => $timeslot ){
                         if ($timeslot['start'] > $sched_start ){
@@ -257,7 +257,7 @@ class ApiController extends BaseController {
                     }
 
                     if ($end_of_day->diffInMinutes($sched_start) > $remaining_task_time){
-                        $end = $sched_start->copy()->addMinutes($task_data->duration);
+                        $end = $sched_start->copy()->addMinutes($task_data['duration']);
                         $remaining_task_time = 0;
                     }else{
                         $remaining_task_time = $end_of_day->diffInMinutes($sched_start);
@@ -318,7 +318,7 @@ class ApiController extends BaseController {
         foreach ( $fixed_events as $event ){
             $this->schedule[] = array( 'start' => $sched_date->copy()->addMinutes($event->start_time), 
                                         'end' => $sched_date->copy()->addMinutes($event->end_time),
-                                        'task' => $event );
+                                        'task' => $event->toArray() );
 
         }
     }

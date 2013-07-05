@@ -105,6 +105,8 @@ class ScheduleCreationTest extends TestCase {
 
         // Make sure that the tasks are in the correct scheduled order
         // with the correct start times.
+
+        //Make sure to fix the key orderings for #5 and #4 when we fix the display ordering
         $correct_tasks = 0;
         foreach( $schedule as $key => $timeslot ) {
             if( $key == 0 ) {
@@ -127,12 +129,12 @@ class ScheduleCreationTest extends TestCase {
                 $this->assertTrue($timeslot['end'] == new Carbon('2013-07-05 11:30:00'));
                 $this->assertTrue($timeslot['task']->name == "name1");
                 $correct_tasks++;
-            }else if( $key == 4 ) {
+            }else if( $key == 5 ) {
                 $this->assertTrue($timeslot['start'] == new Carbon('2013-07-05 11:30:00'));
                 $this->assertTrue($timeslot['end'] == new Carbon('2013-07-05 13:30:00'));
                 $this->assertTrue($timeslot['task']->name == "Class");
                 $correct_tasks++;
-            }else if( $key == 5 ) {
+            }else if( $key == 4 ) {
                 $this->assertTrue($timeslot['start'] == new Carbon('2013-07-05 13:30:00'));
                 $this->assertTrue($timeslot['end'] == new Carbon('2013-07-05 13:40:00'));
                 $this->assertTrue($timeslot['task']->name == "name1");
@@ -234,6 +236,7 @@ class ScheduleCreationTest extends TestCase {
 
         // Make sure that the tasks are in the correct scheduled order
         // with the correct start times.
+        //Make sure to fix the key orderings for #5 and #4 when we fix the display ordering
         $correct_tasks = 0;
         foreach( $json_response as $key => $timeslot ) {
             if( $key == 0 ) {
@@ -256,12 +259,12 @@ class ScheduleCreationTest extends TestCase {
                 $this->assertTrue($timeslot['end'] == new Carbon('2013-07-05 11:30:00'));
                 $this->assertTrue($timeslot['task']->name == "name1");
                 $correct_tasks++;
-            }else if( $key == 4 ) {
+            }else if( $key == 5 ) {
                 $this->assertTrue($timeslot['start'] == new Carbon('2013-07-05 11:30:00'));
                 $this->assertTrue($timeslot['end'] == new Carbon('2013-07-05 13:30:00'));
                 $this->assertTrue($timeslot['task']->name == "Class");
                 $correct_tasks++;
-            }else if( $key == 5 ) {
+            }else if( $key == 4 ) {
                 $this->assertTrue($timeslot['start'] == new Carbon('2013-07-05 13:30:00'));
                 $this->assertTrue($timeslot['end'] == new Carbon('2013-07-05 13:40:00'));
                 $this->assertTrue($timeslot['task']->name == "name1");
