@@ -43,20 +43,30 @@ class ApiController extends BaseController {
                 // valid json request
                 $data = Input::all();
                 // error checking omitted
-                $tasks_obj_arr = null;
+                $tasks_obj_arr = array();
+                $fixed_events_obj_arr = array();
                 $prefs = null;
                 if (isset($data['tasks'])) {
                     $tasks = $data['tasks'];
                     $tasks_obj = json_decode(json_encode($tasks), false);
                     foreach ($tasks_obj as $obj) {
-                        $tasks_obj_arr[$obj->name] = $obj;
+                        $task = Task::create($obj);
+                        $tasks_obj_arr[$obj->name] = $task;
+                    }
+                }
+                if (isset($data['fixed'])) {
+                    $fixed_events = $data['fixed'];
+                    $fixed_events_obj = json_decode(json_encode($fixed_events), false);
+                    foreach ($fixed_events_obj as $obj) {
+                        $fixed = FixedEvent::create($obj);
+                        $fixed_events_obj_arr[$obj->name] = $fixed;
                     }
                 }
 
                 if (isset($data['prefs'])) {
                     $prefs = $data['prefs'];
                 }
-                $sch = $this->createSchedule($tasks_obj_arr, $prefs);
+                $sch = $this->createSchedule($tasks_obj_arr, $fixed_events_obj_arr, $prefs);
             } else {
                 // prepare a response, unsupported POST content
                 $invalid_text = 'The request could not be fulfilled.\n
