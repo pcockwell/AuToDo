@@ -150,6 +150,7 @@ class ScheduleCreationTest extends TestCase {
             }
         }
 
+        print "Number of correct tasks is ".$correct_tasks;
         // Ensure that we got 4 correct tasks.
         $this->assertTrue($correct_tasks == 8);
     }
@@ -229,7 +230,7 @@ class ScheduleCreationTest extends TestCase {
             array(), array(), array('CONTENT_TYPE' => 'application/json'),
             $content);
 
-        $json_response = json_decode($response->getContent());
+        $json_response = json_decode($response->getContent(), true);
 
         // Make sure that the tasks are in the correct scheduled order
         // with the correct start times.
@@ -278,6 +279,7 @@ class ScheduleCreationTest extends TestCase {
             }
         }
 
+        print "Number of correct tasks is ".$correct_tasks;
         // Ensure that we got 8 correct tasks.
         $this->assertTrue($correct_tasks == 8);
     }

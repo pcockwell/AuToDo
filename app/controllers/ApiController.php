@@ -47,19 +47,21 @@ class ApiController extends BaseController {
                 $fixed_events_obj_arr = array();
                 $prefs = null;
                 if (isset($data['tasks'])) {
+                    //TODO These two lines can be combined
                     $tasks = $data['tasks'];
-                    $tasks_obj = json_decode(json_encode($tasks), false);
+                    $tasks_obj = json_decode(json_encode($tasks), true);
+
                     foreach ($tasks_obj as $obj) {
                         $task = Task::create($obj);
-                        $tasks_obj_arr[$obj->name] = $task;
+                        $tasks_obj_arr[$obj['name']] = $task;
                     }
                 }
                 if (isset($data['fixed'])) {
                     $fixed_events = $data['fixed'];
-                    $fixed_events_obj = json_decode(json_encode($fixed_events), false);
+                    $fixed_events_obj = json_decode(json_encode($fixed_events), true);
                     foreach ($fixed_events_obj as $obj) {
                         $fixed = FixedEvent::create($obj);
-                        $fixed_events_obj_arr[$obj->name] = $fixed;
+                        $fixed_events_obj_arr[$obj['name']] = $fixed;
                     }
                 }
 
