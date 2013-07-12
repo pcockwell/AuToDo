@@ -14,4 +14,8 @@ class FixedEvent extends Eloquent {
 	public function getDates(){
 		return array('created_at', 'updated_at', 'start_date', 'end_date');
 	}
+
+    public function getRecurrences() {
+        return json_decode( $this->recurrences );
+    }
 }

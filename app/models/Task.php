@@ -11,6 +11,8 @@ class Task extends Eloquent {
 
 	protected $fillable = array('user_id', 'name', 'priority', 'due', 'duration', 'complete');
 
+    const TASK_MAX_PRIORITY = 3;
+
 	public function getDates(){
 		return array('created_at', 'updated_at', 'due');
 	}
