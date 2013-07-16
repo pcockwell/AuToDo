@@ -16,15 +16,26 @@ class ApiController extends BaseController
     private $schedule_start;
     private $task_break;
 
-	public function getIndex()
-	{
-		return View::make('hello');
-	}
+    public function getIndex()
+    {
+        return View::make('hello');
+    }
+
+    public function postIndex()
+    {
+        $data = Input::all();
+        if (Input::isJson())
+        {
+            $data['header'] = print_r(Request::header(), true);
+        }
+        return print_r($data, true);
+    }
 
     public function missingMethod($parameters)
     {
-        $user = User::getTestUser();
-        return "Hello $user->name";
+        return print_r(Request::path(), true);
+        //$user = User::getTestUser();
+        //return "Hello $user->name";
     }
 
     public function getPhpinfo()
@@ -33,9 +44,9 @@ class ApiController extends BaseController
     }
 
     // Make max priority accessible.
-    public function getMaxPriority()
+    public function getMaxpriority()
     {
-        return $this->task_max_priority;
+        return Task::TASK_MAX_PRIORITY;
     }
 
     public function postSchedule()
@@ -59,7 +70,7 @@ class ApiController extends BaseController
 
                     foreach ($tasks_obj as $obj)
                     {
-                        $task = Task::create($obj);
+                        $task = new Task($obj);
                         $tasks_obj_arr[$obj['name']] = $task;
                     }
                 }
@@ -69,7 +80,7 @@ class ApiController extends BaseController
                     $fixed_events_obj = json_decode(json_encode($fixed_events), true);
                     foreach ($fixed_events_obj as $obj)
                     {
-                        $fixed = FixedEvent::create($obj);
+                        $fixed = new FixedEvent($obj);
                         $fixed_events_obj_arr[$obj['name']] = $fixed;
                     }
                 }

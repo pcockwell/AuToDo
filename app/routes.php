@@ -20,6 +20,54 @@ Route::get('users', function()
     return View::make('users')->with('users', $users);
 });
 
+Route::filter('json', function(){
+    $new_input = array(
+        'errors' => array()
+    );
+    if (Input::isJson())
+    {
+        foreach(Input::all() as $key => $content)
+        {
+            $class_name = str_singular(studly_case($key));
+            if (class_exists($class_name))
+            {
+                if (is_array($content))
+                {
+                    foreach($content as $content_item)
+                    {
+                        try
+                        {
+                            $new_input[$class_name][] = new $class_name($content_item);
+                        }
+                        catch (ValidationException $e)
+                        {
+                            $new_input['errors'] = array_merge($new_input['errors'], $e->get());
+                        }
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        $new_input[$class_name][] = new $class_name($content);
+                    }
+                    catch (ValidationException $e)
+                    {
+                        $new_input['errors'] = array_merge($new_input['errors'], $e->get());
+                    }
+                }
+            }
+        }
+        Input::replace($new_input);
+    }
+    else
+    {
+        return "Input provided was not JSON";
+    }
+});
+
+Route::when('*.json', 'json');
+
 // Controller to handle user accounts.
 Route::controller('user', 'UserController');
 
