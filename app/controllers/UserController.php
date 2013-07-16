@@ -9,7 +9,8 @@ class UserController extends BaseController
      */
     public function postCreate()
     {
-        if (Request::is('user/create*')) {
+        if (Request::is('user/create*'))
+        {
             if (!Input::has('name')) {
                 // Return missing name parameter
                 return Response::make( 'Missing name parameter', 400 );
@@ -39,8 +40,10 @@ class UserController extends BaseController
      */
     public function postDelete()
     {
-        if (Request::is('user/delete*')) {
-            if (!Input::has('name')) {
+        if (Request::is('user/delete*'))
+        {
+            if (!Input::has('name'))
+            {
                 // Return missing name parameter
                 return Response::make( 'Missing name parameter', 400 );
             }
@@ -48,7 +51,8 @@ class UserController extends BaseController
 
             $user_model = User::where('name', '=', $user_name)->first();
 
-            if (!isset($user_model) || $user_model == false) {
+            if (!isset($user_model) || $user_model == false)
+            {
                 return Response::make( 'No user with name '.$user_name, 400 );
             }
             $user_model->delete();

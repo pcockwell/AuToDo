@@ -2,7 +2,8 @@
 
 use Carbon\Carbon;
 
-class ApiController extends BaseController {
+class ApiController extends BaseController
+{
 
     const DAYS_IN_WEEK = 7;
     const MIN_TASK_CHUNK = 30; // in minutes
@@ -20,62 +21,67 @@ class ApiController extends BaseController {
 		return View::make('hello');
 	}
 
-    public function missingMethod($parameters){
+    public function missingMethod($parameters)
+    {
         $user = User::getTestUser();
         return "Hello $user->name";
     }
 
-	public function getHello(){
-		return "Hello " . User::getTestUser()->name;
-	}
-
-	public function get_name($name){
-		return "Hello $name";
-	}
-
-    public function get_phpinfo(){
+    public function getPhpinfo()
+    {
         phpinfo();
     }
 
     // Make max priority accessible.
-    public function getMaxPriority() {
+    public function getMaxPriority()
+    {
         return $this->task_max_priority;
     }
 
-    public function post_schedule() {
+    public function postSchedule()
+    {
         $sch = null;
-        if (Request::is('api/schedule*')) {
-            if (Input::isJson()) {
+        if (Request::is('api/schedule*'))
+        {
+            if (Input::isJson())
+            {
                 // valid json request
                 $data = Input::all();
                 // error checking omitted
                 $tasks_obj_arr = array();
                 $fixed_events_obj_arr = array();
                 $prefs = null;
-                if (isset($data['tasks'])) {
+                if (isset($data['tasks']))
+                {
                     //TODO These two lines can be combined
                     $tasks = $data['tasks'];
                     $tasks_obj = json_decode(json_encode($tasks), true);
 
-                    foreach ($tasks_obj as $obj) {
+                    foreach ($tasks_obj as $obj)
+                    {
                         $task = Task::create($obj);
                         $tasks_obj_arr[$obj['name']] = $task;
                     }
                 }
-                if (isset($data['fixed'])) {
+                if (isset($data['fixed']))
+                {
                     $fixed_events = $data['fixed'];
                     $fixed_events_obj = json_decode(json_encode($fixed_events), true);
-                    foreach ($fixed_events_obj as $obj) {
+                    foreach ($fixed_events_obj as $obj)
+                    {
                         $fixed = FixedEvent::create($obj);
                         $fixed_events_obj_arr[$obj['name']] = $fixed;
                     }
                 }
 
-                if (isset($data['prefs'])) {
+                if (isset($data['prefs']))
+                {
                     $prefs = $data['prefs'];
                 }
                 $sch = $this->createSchedule($tasks_obj_arr, $fixed_events_obj_arr, $prefs);
-            } else {
+            }
+            else
+            {
                 // prepare a response, unsupported POST content
                 $invalid_text = 'The request could not be fulfilled.\n
                     An unsupported content type was used.';
@@ -88,7 +94,8 @@ class ApiController extends BaseController {
         return $response;
     }
 
-    private function createSchedule( $tasks, $fixed_events, $prefs ) {
+    private function createSchedule( $tasks, $fixed_events, $prefs )
+    {
         // Reset arrays for the start of the current schedule request
         $this->task_conflicts = array();
         $this->event_conflicts = array();
@@ -96,16 +103,20 @@ class ApiController extends BaseController {
         $this->empty_slots = array();
 
         // populate variables with caller preferences
-        if( isset( $prefs[ 'start' ] ) ) {
+        if( isset( $prefs[ 'start' ] ) )
+        {
             $this->schedule_start = new Carbon( $prefs[ 'start' ] );
         }
-        else {
+        else
+        {
             $this->schedule_start = Carbon::now();
         }
-        if( isset( $prefs[ "break" ] ) ) {
+        if( isset( $prefs[ "break" ] ) )
+        {
             $break = $prefs[ "break" ];
         }
-        else {
+        else
+        {
             $break = 0;
         }
 
@@ -116,11 +127,15 @@ class ApiController extends BaseController {
 
         $prioritized_tasks = self::sortTasks( $tasks );
 
-        foreach( $prioritized_tasks as $priority => $task_list ) {
-            foreach( $task_list as $task_name => $task ) {
+        foreach( $prioritized_tasks as $priority => $task_list )
+        {
+            foreach( $task_list as $task_name => $task )
+            {
                 $ret = self::addTask( $tasks[ $task_name ] );
                 if( !$ret )
+                {
                     $this->task_conflicts[] = $tasks[ $task_name ];
+                }
             }
         }
 
@@ -134,68 +149,88 @@ class ApiController extends BaseController {
     // Input: array of unsorted tasks
     // Output: array of arrays of sorted tasks
     //         inner array has key=task->name, value=task->due
-    private function sortTasks( $tasks ) {
+    private function sortTasks( $tasks )
+    {
         // An array of priorities each mapping to an array of tasks
         $prioritized_tasks = array();
 
         // Put each task into its priority array
-        foreach( $tasks as $task ) {
-            if( !isset( $prioritized_tasks[ $task->priority ] ) ) {
+        foreach( $tasks as $task )
+        {
+            if( !isset( $prioritized_tasks[ $task->priority ] ) )
+            {
                 $prioritized_tasks[ $task->priority ] = array();
             }
             $prioritized_tasks[ $task->priority ][ $task->name ] = $task->due;
         }
 
-        foreach( $prioritized_tasks as &$task_list ) {
-            uasort( $task_list, function ($a, $b){
-                if ( $a->eq($b) ){
-                    return 0;
+        foreach( $prioritized_tasks as &$task_list )
+        {
+            uasort( $task_list, 
+                function ($a, $b)
+                {
+                    if ( $a->eq($b) )
+                    {
+                        return 0;
+                    }
+                    return $a->lt($b) ? -1 : 1;
                 }
-                return $a->lt($b) ? -1 : 1;
-            } );
+            );
         }
 
         krsort( $prioritized_tasks );
         return $prioritized_tasks;
     }
 
-    private function fillFixedEvents( $fixed_events ) {
+    private function fillFixedEvents( $fixed_events )
+    {
         // TODO: Will fixed events have collisions?  Do they need to be sorted?
         // Sorted would mean earlier start time+date => implied higher priority
-        foreach( $fixed_events as $event ) {
-            $ret = self::addEvent( $event );
-            if( !$ret )
+        foreach( $fixed_events as $event )
+        {
+            if( self::addEvent( $event ) )
+            {
                 $this->event_conflicts[] = $event->toArray();
+            }
         }
     }
 
-    private function addEvent( $event ) {
+    private function addEvent( $event )
+    {
         $event_start_date = $event->start_date->gt( $this->schedule_start ) ?
                             $event->start_date->copy() : $this->schedule_start->copy();
         if( 60*$event_start_date->hour + $event_start_date->minute > $event->start_time )
+        {
             $event_start_date->addDay();
+        }
         $event_start_date->startOfDay();
 
         // Schedule each recurrence of this event
         $event_recurrences = $event->getRecurrences();
-        foreach( $event_recurrences as $day_of_week ) {
+        foreach( $event_recurrences as $day_of_week )
+        {
             $current_date = $event_start_date->copy();
 
             $diff = $day_of_week - $current_date->dayOfWeek;
             if( $diff < 0 )
+            {
                 $diff += self::DAYS_IN_WEEK;
+            }
 
             $current_date->addDays( $diff );
 
-            while( $current_date->lte( $event->end_date ) ) {
+            while( $current_date->lte( $event->end_date ) )
+            {
 
                 $empty_slot_id = self::findFixedSlot(
                     $current_date->copy()->addMinutes( $event->start_time ),
                     $current_date->copy()->addMinutes( $event->end_time ) );
 
                 // TODO: What should be done here if not all recurrences can be scheduled?
-                if( $empty_slot_id === null )
+                if( is_null($empty_slot_id) )
+                {
                     return false;
+                }
 
                 // Add event to schedule
                 $current_event_start = $current_date->copy()->addMinutes( $event->start_time );
@@ -211,7 +246,7 @@ class ApiController extends BaseController {
                         array( 'start' => $time_slot[ 'start' ]->copy(),
                                'end' => $current_event_start->copy() ),
                         array( 'start' => $current_event_end->copy(),
-                               'end' => $time_slot[ 'end' ] === null ?
+                               'end' => is_null($time_slot[ 'end' ]) ?
                                         null : $time_slot[ 'end' ]->copy() )
                     )
                 );
@@ -227,14 +262,18 @@ class ApiController extends BaseController {
     // Input: start time of event
     // Output: start time of empty time slot
     //         duration of empty time slot
-    private function findFixedSlot( $event_start, $event_end ) {
-        foreach( $this->empty_slots as $slot_id => $empty_slot ) {
+    private function findFixedSlot( $event_start, $event_end )
+    {
+        foreach( $this->empty_slots as $slot_id => $empty_slot )
+        {
             if( $empty_slot[ 'start' ]->gt( $event_start ) )
+            {
                 break;
+            }
 
             if( $event_start->gte( $empty_slot[ 'start' ] )
-             && ( $empty_slot[ 'end' ] === null
-               || $event_end->lte( $empty_slot[ 'end' ] ) ) ) {
+             && ( is_null($empty_slot[ 'end' ]) || $event_end->lte( $empty_slot[ 'end' ] ) ) )
+            {
                 return $slot_id;
             }
         }
@@ -242,28 +281,35 @@ class ApiController extends BaseController {
         return null;
     }
 
-    private function addTask( $task ) {
+    private function addTask( $task )
+    {
         $task_duration = $task->duration;
-        $task_min_split = $task->min_split === null ?
-                          self::MIN_TASK_CHUNK : $task->min_split;
+        $task_min_split = is_null($task->min_split) ? self::MIN_TASK_CHUNK : $task->min_split;
 
-        while( $task_duration > 0 ) {
+        while( $task_duration > 0 )
+        {
             $empty_slot_id = self::findTimeSlot( $task_duration,
                                                  $task->due,
                                                  $task_min_split );
 
             // TODO: half scheduled tasks
-            if( $empty_slot_id === null )
+            if( is_null($empty_slot_id) )
+            {
                 return false;
+            }
 
             $time_slot = $this->empty_slots[ $empty_slot_id ];
-            if( $time_slot[ 'end' ] === null )
+            if( is_null($time_slot[ 'end' ]) )
+            {
                 $time_slot_duration = null;
+            }
             else
+            {
                 $time_slot_duration = $time_slot[ 'start' ]->diffInMinutes( $time_slot[ 'end' ] );
+            }
 
-            if( $time_slot_duration === null
-             || $time_slot_duration >= $task_duration + $this->task_break ) {
+            if( is_null($time_slot_duration) || $time_slot_duration >= $task_duration + $this->task_break )
+            {
                 // Add event to schedule
                 self::insertSchedule(
                     $time_slot[ 'start' ],
@@ -271,23 +317,27 @@ class ApiController extends BaseController {
                     $task );
 
                 // Update empty time slots
-                if( $time_slot_duration === null
-                 || $time_slot_duration - ( $task_duration + $this->task_break ) > 0 ) {
+                if( is_null($time_slot_duration)
+                 || $time_slot_duration - ( $task_duration + $this->task_break ) > 0 )
+                {
                     array_splice( $this->empty_slots, $empty_slot_id, 1, array(
                             array( 'start' => $time_slot[ 'start' ]->copy()->addMinutes( $task_duration + $this->task_break ),
-                                   'end' => $time_slot[ 'end' ] === null ?
+                                   'end' => is_null($time_slot[ 'end' ]) ?
                                             null : $time_slot[ 'end' ]->copy() )
                         )
                     );
                 }
-                else {
+                else
+                {
                     array_splice( $this->empty_slots, $empty_slot_id, 1 );
                 }
 
                 $task_duration = 0;
             }
-            else {
-                if( $task_duration - ( $time_slot_duration + $this->task_break ) >= $task_min_split ) {
+            else
+            {
+                if( $task_duration - ( $time_slot_duration + $this->task_break ) >= $task_min_split )
+                {
                     self::insertSchedule(
                         $time_slot[ 'start' ],
                         $time_slot[ 'end' ],
@@ -298,7 +348,8 @@ class ApiController extends BaseController {
 
                     $task_duration -= $time_slot_duration;
                 }
-                else {
+                else
+                {
                     // Correctness: $duration_to_schedule will not exceed time slot
                     // If enter else clause, then:
                     // $task_duration - $time_slot_duration < $task_min_split
@@ -313,12 +364,14 @@ class ApiController extends BaseController {
 
                     // Update empty time slots
                     if( $time_slot_duration >= $duration_to_schedule + $this->task_break )
+                    {
                         array_splice( $this->empty_slots, $empty_slot_id, 1, array(
                                 array( 'start' => $time_slot[ 'start' ]->copy()->addMinutes( $task_duration + $this->task_break ),
                                        'end' => $time_slot[ 'end' ] === null ?
                                                 null : $time_slot[ 'end' ]->copy() )
                             )
                         );
+                    }
 
                     $task_duration -= $duration_to_schedule;
 
@@ -334,22 +387,31 @@ class ApiController extends BaseController {
     //        target task due time
     // Output: start time of empty time slot
     //         duration of empty time slot
-    private function findTimeSlot( $task_duration, $task_due, $min_split ) {
-        foreach( $this->empty_slots as $slot_id => $empty_slot ) {
+    private function findTimeSlot( $task_duration, $task_due, $min_split )
+    {
+        foreach( $this->empty_slots as $slot_id => $empty_slot )
+        {
             if( $empty_slot[ 'start' ]->gte( $task_due ) )
+            {
                 break;
+            }
 
-            if( $empty_slot[ 'end' ] === null )
+            if( is_null($empty_slot[ 'end' ]) )
+            {
                 $empty_slot_duration = null;
+            }
             else
+            {
                 $empty_slot_duration = $empty_slot[ 'start' ]->diffInMinutes( $empty_slot[ 'end' ] );
+            }
 
             // Two times min_split to make sure that the other half of the split task
             // will have at least min_split duration
-            if( $empty_slot_duration === null
+            if( is_null($empty_slot_duration)
              || ( $task_duration >= 2*$min_split
-               && $empty_slot_duration >= $min_split + $this->task_break )
-             || $empty_slot_duration >= $task_duration + $this->task_break ) {
+             && $empty_slot_duration >= $min_split + $this->task_break )
+             || $empty_slot_duration >= $task_duration + $this->task_break )
+            {
                 return $slot_id;
             }
         }
@@ -357,7 +419,8 @@ class ApiController extends BaseController {
         return null;
     }
 
-    private function insertSchedule( $start, $end, $task ) {
+    private function insertSchedule( $start, $end, $task )
+    {
         $idx = self::insertIndex( 0, count( $this->schedule )-1, $start );
         array_splice( $this->schedule, $idx, 0, array( array(
                 'start' => $start->copy(),
@@ -367,18 +430,27 @@ class ApiController extends BaseController {
         );
     }
 
-    private function insertIndex( $low, $high, $start ) {
+    private function insertIndex( $low, $high, $start )
+    {
         if( $low > $high )
+        {
             return $high+1;
+        }
 
         $mid = floor( ( $low+$high )/2 );
 
         if( $start->lt( $this->schedule[ $mid ][ 'start' ] ) )
+        {
             return self::insertIndex( $low, $mid-1, $start );
-        elseif( $start->gt( $this->schedule[ $mid ][ 'start' ] ) )
+        }
+        else if( $start->gt( $this->schedule[ $mid ][ 'start' ] ) )
+        {
             return self::insertIndex( $mid+1, $high, $start );
+        }
         else
+        {
             return $mid;
+        }
     }
 
 }

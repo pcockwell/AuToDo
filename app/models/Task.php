@@ -1,6 +1,7 @@
 <?php
 
-class Task extends Eloquent {
+class Task extends Eloquent
+{
 
 	/**
 	 * The database table used by the model.
@@ -13,7 +14,8 @@ class Task extends Eloquent {
 
     const TASK_MAX_PRIORITY = 3;
 
-	public function getDates(){
+	public function getDates()
+	{
 		return array('created_at', 'updated_at', 'due');
 	}
 
