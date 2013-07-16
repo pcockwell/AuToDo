@@ -4,11 +4,6 @@ use Carbon\Carbon;
 
 class ApiController extends BaseController {
 
-//     private $conflicts;
-//     private $schedule;
-//     private $time_slots;
-//     private $task_max_priority = 3;
-
     const DAYS_IN_WEEK = 7;
     const MIN_TASK_CHUNK = 30; // in minutes
 
@@ -16,7 +11,9 @@ class ApiController extends BaseController {
     private $event_conflicts;
     private $schedule;
     private $empty_slots;
+
     private $schedule_start;
+    private $task_break;
 
 	public function getIndex()
 	{
@@ -115,7 +112,7 @@ class ApiController extends BaseController {
         // begin scheduling with a single infinite time frame
         $this->empty_slots[] = array( 'start' => $this->schedule_start,
                                       'end' => null );
-        self::fillFixedEvents( $fixed_events );
+//         self::fillFixedEvents( $fixed_events );
 
         $prioritized_tasks = self::sortTasks( $tasks );
 
@@ -247,15 +244,15 @@ class ApiController extends BaseController {
 
     private function addTask( $task ) {
         $task_duration = $task->duration;
-        if( $task->min_split === null )
-            $task_min_split = self::MIN_TASK_CHUNK;
-        else
-            $task_min_split = $task->min_split;
+        $task_min_split = $task->min_split === null ?
+                          self::MIN_TASK_CHUNK : $task->min_split;
 
         while( $task_duration > 0 ) {
             $empty_slot_id = self::findTimeSlot( $task_duration,
                                                  $task->due,
                                                  $task_min_split );
+
+            // TODO: half scheduled tasks
             if( $empty_slot_id === null )
                 return false;
 
@@ -265,7 +262,8 @@ class ApiController extends BaseController {
             else
                 $time_slot_duration = $time_slot[ 'start' ]->diffInMinutes( $time_slot[ 'end' ] );
 
-            if( $time_slot_duration === null || $time_slot_duration >= $task_duration ) {
+            if( $time_slot_duration === null
+             || $time_slot_duration >= $task_duration + $this->task_break ) {
                 // Add event to schedule
                 self::insertSchedule(
                     $time_slot[ 'start' ],
@@ -274,9 +272,9 @@ class ApiController extends BaseController {
 
                 // Update empty time slots
                 if( $time_slot_duration === null
-                 || $time_slot_duration - $task_duration > 0 ) {
+                 || $time_slot_duration - ( $task_duration + $this->task_break ) > 0 ) {
                     array_splice( $this->empty_slots, $empty_slot_id, 1, array(
-                            array( 'start' => $time_slot[ 'start' ]->copy()->addMinutes( $task_duration ),
+                            array( 'start' => $time_slot[ 'start' ]->copy()->addMinutes( $task_duration + $this->task_break ),
                                    'end' => $time_slot[ 'end' ] === null ?
                                             null : $time_slot[ 'end' ]->copy() )
                         )
@@ -289,7 +287,7 @@ class ApiController extends BaseController {
                 $task_duration = 0;
             }
             else {
-                if( $task_duration - $time_slot_duration >= $task_min_split ) {
+                if( $task_duration - ( $time_slot_duration + $this->task_break ) >= $task_min_split ) {
                     self::insertSchedule(
                         $time_slot[ 'start' ],
                         $time_slot[ 'end' ],
@@ -306,13 +304,21 @@ class ApiController extends BaseController {
                     // $task_duration - $time_slot_duration < $task_min_split
                     //     $task_duration - $task_min_split < $time_slot_duration
                     $duration_to_schedule = $task_duration - $task_min_split;
+                    // TODO: test and remove assertion
+                    assert( $time_slot_duration >= $duration_to_schedule + $this->task_break );
                     self::insertSchedule(
                         $time_slot[ 'start' ],
                         $time_slot[ 'start' ]->copy()->addMinutes( $duration_to_schedule ),
                         $task );
 
                     // Update empty time slots
-                    array_splice( $this->empty_slots, $empty_slot_id, 1 );
+                    if( $time_slot_duration >= $duration_to_schedule + $this->task_break )
+                        array_splice( $this->empty_slots, $empty_slot_id, 1, array(
+                                array( 'start' => $time_slot[ 'start' ]->copy()->addMinutes( $task_duration + $this->task_break ),
+                                       'end' => $time_slot[ 'end' ] === null ?
+                                                null : $time_slot[ 'end' ]->copy() )
+                            )
+                        );
 
                     $task_duration -= $duration_to_schedule;
 
@@ -341,8 +347,9 @@ class ApiController extends BaseController {
             // Two times min_split to make sure that the other half of the split task
             // will have at least min_split duration
             if( $empty_slot_duration === null
-             || ( $task_duration >= 2*$min_split && $empty_slot_duration >= $min_split )
-             || $empty_slot_duration >= $task_duration ) {
+             || ( $task_duration >= 2*$min_split
+               && $empty_slot_duration >= $min_split + $this->task_break )
+             || $empty_slot_duration >= $task_duration + $this->task_break ) {
                 return $slot_id;
             }
         }
