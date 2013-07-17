@@ -55,8 +55,6 @@ Route::filter('json', function(){
                 $new_input[$key] = $content;
             }
         }
-        //$new_path = str_replace('.json', '', Request::path());
-        //return Redirect::to($new_path)->withInput($new_input);
         Input::replace($new_input);
     }
     else
@@ -76,7 +74,7 @@ Route::get('users', function()
     return View::make('users')->with('users', $users);
 });
 
-Route::group(array('suffix' => '.json'), function()
+Route::group(array('suffix' => array('.json', '.xml')), function()
 {
     // Controller to handle user accounts.
     Route::controller('user', 'UserController');

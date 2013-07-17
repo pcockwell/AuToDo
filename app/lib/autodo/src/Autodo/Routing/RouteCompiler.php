@@ -146,7 +146,15 @@ class RouteCompiler extends BaseRouteCompiler
             $regexp .= self::computeRegexp($tokens, $i, $firstOptional);
         }
 
-        $regexp .= $route->getOption('_suffix') ?: '';
+        $suffix = $route->getOption('_suffix') ?: '';
+        if (!is_array($suffix))
+        {
+            $regexp .= $suffix;
+        }
+        else
+        {
+            $regexp .= '('.implode('|', $suffix).')';
+        }
 
         return array(
             'staticPrefix' => 'text' === $tokens[0][0] ? $tokens[0][1] : '',

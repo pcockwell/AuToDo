@@ -120,8 +120,6 @@ class Router extends BaseRouter
 
             if (isset($group['suffix']))
             {
-                if (is_array($group['suffix'])) return implode('/', $group['suffix']);
-
                 return $group['suffix'];
             }
         }
@@ -139,6 +137,20 @@ class Router extends BaseRouter
     {
         $suffix = isset($action['suffix']) ? $action['suffix'] : '';
 
-        return trim($suffix.'/'.$this->getGroupSuffix(), '/');
+        $groupSuffix = $this->getGroupSuffix();
+        if (!is_array($groupSuffix))
+        {
+            return trim($suffix.'/'.$groupSuffix, '/');
+        }
+        else
+        {
+            $mergedSuffixes = array();
+            foreach($groupSuffix as $currentSuffix)
+            {
+                $mergedSuffixes[] = trim($suffix.'/'.$currentSuffix, '/');
+            }
+            return $mergedSuffixes;
+        }
+
     }
 }
