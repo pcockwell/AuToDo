@@ -37,4 +37,5 @@ return array(
     'Doctrine\\Common\\' => array($vendorDir . '/doctrine/common/lib'),
     'ClassPreloader' => array($vendorDir . '/classpreloader/classpreloader/src'),
     'Carbon' => array($vendorDir . '/nesbot/carbon'),
+    'Autodo' => array($baseDir . '/app/lib/autodo/src'),
 );

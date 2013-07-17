@@ -81,3 +81,14 @@ App::down(function()
 */
 
 require app_path().'/filters.php';
+
+Validator::extend('validate_recurrence', function($attribute, $value, $parameters)
+{
+    if (!is_string($value)) return false;
+
+    if (null === $decoded_value = json_decode($value)) return false;
+
+    if (!is_array($decoded_value) || count($decoded_value) == 0) return false;
+
+    return true;
+});

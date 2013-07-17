@@ -15,8 +15,8 @@ class User extends Eloquent implements UserInterface, RemindableInterface
 
 	protected $fillable = array('name', 'email');
 
-	public static $rules = array(
-		'name' => array('required', 'min:5'),
+	protected static $rules = array(
+		'name' => array('required', 'alpha', 'min:5'),
 		'email' => array('required', 'email')
 	);
 
@@ -28,11 +28,11 @@ class User extends Eloquent implements UserInterface, RemindableInterface
 	//protected $hidden = array('password');
 
  	public function __construct($attributes = array(), $exists = false) {
-        parent::__construct($attributes, $exists); // initialize the model according to the parent class functionality.
         $validator = Validator::make($attributes, self::$rules);
         if ($validator->fails()){
         	throw new ValidationException($validator);
         }
+        parent::__construct($attributes, $exists);
     }
 
 	/**

@@ -18,24 +18,13 @@ class ApiController extends BaseController
 
     public function getIndex()
     {
-        return View::make('hello');
-    }
-
-    public function postIndex()
-    {
-        $data = Input::all();
-        if (Input::isJson())
-        {
-            $data['header'] = print_r(Request::header(), true);
-        }
-        return print_r($data, true);
+        View::make('hello');
     }
 
     public function missingMethod($parameters)
     {
-        return print_r(Request::path(), true);
-        //$user = User::getTestUser();
-        //return "Hello $user->name";
+        $user = User::getTestUser();
+        return "Hello $user->name";
     }
 
     public function getPhpinfo()
@@ -54,51 +43,41 @@ class ApiController extends BaseController
         $sch = null;
         if (Request::is('api/schedule*'))
         {
-            if (Input::isJson())
-            {
-                // valid json request
-                $data = Input::all();
-                // error checking omitted
-                $tasks_obj_arr = array();
-                $fixed_events_obj_arr = array();
-                $prefs = null;
-                if (isset($data['tasks']))
-                {
-                    //TODO These two lines can be combined
-                    $tasks = $data['tasks'];
-                    $tasks_obj = json_decode(json_encode($tasks), true);
+            // valid json request
+            $data = Input::all();
+            // error checking omitted
+            $tasks = array();
+            $fixed_events = array();
+            $prefs = null;
 
-                    foreach ($tasks_obj as $obj)
-                    {
-                        $task = new Task($obj);
-                        $tasks_obj_arr[$obj['name']] = $task;
-                    }
-                }
-                if (isset($data['fixed']))
-                {
-                    $fixed_events = $data['fixed'];
-                    $fixed_events_obj = json_decode(json_encode($fixed_events), true);
-                    foreach ($fixed_events_obj as $obj)
-                    {
-                        $fixed = new FixedEvent($obj);
-                        $fixed_events_obj_arr[$obj['name']] = $fixed;
-                    }
-                }
-
-                if (isset($data['prefs']))
-                {
-                    $prefs = $data['prefs'];
-                }
-                $sch = $this->createSchedule($tasks_obj_arr, $fixed_events_obj_arr, $prefs);
-            }
-            else
+            if (isset($data['Task']))
             {
-                // prepare a response, unsupported POST content
-                $invalid_text = 'The request could not be fulfilled.\n
-                    An unsupported content type was used.';
-                $response = Response::make( $invalid_text, 400 );
-                return $response;
+                foreach ($data['Task'] as $task)
+                {
+                    $tasks[$task->name] = $task;
+                }
             }
+            if (isset($data['FixedEvent']))
+            {
+                foreach ($data['FixedEvent'] as $fixed_event)
+                {
+                    $fixed_events[$fixed_event->name] = $fixed_event;
+                }
+            }
+
+            if (isset($data['prefs']))
+            {
+                $prefs = $data['prefs'];
+            }
+            $sch = $this->createSchedule($tasks, $fixed_events, $prefs);
+        }
+        else
+        {
+            // prepare a response, unsupported POST content
+            $invalid_text = 'The request could not be fulfilled.\n
+                An unsupported content type was used.';
+            $response = Response::make( $invalid_text, 400 );
+            return $response;
         }
         // prepare a 200 OK response
         $response = Response::make( $sch, 200 );

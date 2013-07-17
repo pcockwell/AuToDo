@@ -11,15 +11,6 @@
 |
 */
 
-// Route to view users
-//TODO This should not be accessible
-Route::get('users', function()
-{
-    $users = User::all();
-
-    return View::make('users')->with('users', $users);
-});
-
 Route::filter('json', function(){
     $new_input = array(
         'errors' => array()
@@ -39,9 +30,9 @@ Route::filter('json', function(){
                         {
                             $new_input[$class_name][] = new $class_name($content_item);
                         }
-                        catch (ValidationException $e)
+                        catch (ValidationException $v)
                         {
-                            $new_input['errors'] = array_merge($new_input['errors'], $e->get());
+                            $new_input['errors'] = array_merge($new_input['errors'], $v->get());
                         }
                     }
                 }
@@ -51,13 +42,19 @@ Route::filter('json', function(){
                     {
                         $new_input[$class_name][] = new $class_name($content);
                     }
-                    catch (ValidationException $e)
+                    catch (ValidationException $v)
                     {
-                        $new_input['errors'] = array_merge($new_input['errors'], $e->get());
+                        $new_input['errors'] = array_merge($new_input['errors'], $v->get());
                     }
                 }
             }
+            else
+            {
+                $new_input[$key] = $content;
+            }
         }
+        //$new_path = str_replace('.json', '', Request::path());
+        //return Redirect::to($new_path)->withInput($new_input);
         Input::replace($new_input);
     }
     else
@@ -68,11 +65,23 @@ Route::filter('json', function(){
 
 Route::when('*.json', 'json');
 
-// Controller to handle user accounts.
-Route::controller('user', 'UserController');
+// Route to view users
+//TODO This should not be accessible
+Route::get('users', function()
+{
+    $users = User::all();
 
-// Controller for base API function.
-Route::controller('api', 'ApiController');
+    return View::make('users')->with('users', $users);
+});
+
+Route::group(array('suffix' => '.json'), function()
+{
+    // Controller to handle user accounts.
+    Route::controller('user', 'UserController');
+
+    // Controller for base API function.
+    Route::controller('api', 'ApiController');
+});
 
 //Must always be the last entry in the file
 Route::controller('/', 'ApiController');
