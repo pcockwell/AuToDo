@@ -19,16 +19,18 @@ Route::filter('json', function(){
     {
         foreach(Input::all() as $key => $content)
         {
-            $class_name = str_singular(studly_case($key));
-            if (class_exists($class_name))
+            $class_type = str_singular(studly_case($key));
+            if (class_exists($class_type))
             {
+                $class = new ReflectionClass($class_type);
+                $class_name = $class->getShortName();
                 if (is_array($content))
                 {
                     foreach($content as $content_item)
                     {
                         try
                         {
-                            $new_input[$class_name][] = new $class_name($content_item);
+                            $new_input[$class_name][] = $class->newInstance($content_item);
                         }
                         catch (ValidationException $v)
                         {
@@ -40,7 +42,7 @@ Route::filter('json', function(){
                 {
                     try
                     {
-                        $new_input[$class_name][] = new $class_name($content);
+                        $new_input[$class_name][] = $class->newInstance($content);
                     }
                     catch (ValidationException $v)
                     {
