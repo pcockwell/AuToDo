@@ -18,7 +18,7 @@ class ApiController extends BaseController
 
     public function getIndex()
     {
-        View::make('hello');
+        return View::make('hello');
     }
 
     public function missingMethod($parameters)

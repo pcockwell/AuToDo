@@ -27,11 +27,15 @@ class User extends Eloquent implements UserInterface, RemindableInterface
 	 */
 	//protected $hidden = array('password');
 
- 	public function __construct($attributes = array(), $exists = false) {
-        $validator = Validator::make($attributes, self::$rules);
-        if ($validator->fails()){
-        	throw new ValidationException($validator);
-        }
+ 	public function __construct($attributes = array(), $exists = false) 
+ 	{
+ 		if (count($attributes) > 0)
+ 		{
+	        $validator = Validator::make($attributes, self::$rules);
+	        if ($validator->fails()){
+	        	throw new ValidationException($validator);
+	        }
+	    }
         parent::__construct($attributes, $exists);
     }
 

@@ -32,13 +32,18 @@ class Task extends Eloquent
 	 */
 	//protected $hidden = array('password');
 
- 	public function __construct($attributes = array(), $exists = false) {
+ 	public function __construct($attributes = array(), $exists = false) 
+ 	{
+
+        if (count($attributes) > 0)
+        {
         self::$rules['priority'][] = 'between:0,'.self::TASK_MAX_PRIORITY;
         self::$rules['due'][] = 'after:'.Carbon::now()->toDateTimeString();
 
-        $validator = Validator::make($attributes, self::$rules);
-        if ($validator->fails()){
-        	throw new ValidationException($validator);
+            $validator = Validator::make($attributes, self::$rules);
+            if ($validator->fails()){
+                throw new ValidationException($validator);
+            }
         }
         parent::__construct($attributes, $exists);
     }

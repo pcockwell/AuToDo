@@ -33,14 +33,18 @@ class FixedEvent extends Eloquent
      */
     //protected $hidden = array('password');
 
-    public function __construct($attributes = array(), $exists = false) {
-        self::$rules['start_time'][] = 'between:0,'.self::MINUTES_IN_DAY;
-        self::$rules['end_time'][] = 'between:0,'.self::MINUTES_IN_DAY;
-        self::$rules['end_date'][] = 'after:'.Carbon::now()->toDateTimeString();
+    public function __construct($attributes = array(), $exists = false) 
+    {
+        if (count($attributes) > 0)
+        {
+            self::$rules['start_time'][] = 'between:0,'.self::MINUTES_IN_DAY;
+            self::$rules['end_time'][] = 'between:0,'.self::MINUTES_IN_DAY;
+            self::$rules['end_date'][] = 'after:'.Carbon::now()->toDateTimeString();
 
-        $validator = Validator::make($attributes, self::$rules);
-        if ($validator->fails()){
-            throw new ValidationException($validator);
+            $validator = Validator::make($attributes, self::$rules);
+            if ($validator->fails()){
+                throw new ValidationException($validator);
+            }
         }
         parent::__construct($attributes, $exists);
     }
