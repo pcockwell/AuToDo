@@ -113,7 +113,7 @@ class ApiController extends BaseController
         // begin scheduling with a single infinite time frame
         $this->empty_slots[] = array( 'start' => $this->schedule_start,
                                       'end' => null );
-//         self::fillFixedEvents( $fixed_events );
+        self::fillFixedEvents( $fixed_events );
 
         $prioritized_tasks = self::sortTasks( $tasks );
 
