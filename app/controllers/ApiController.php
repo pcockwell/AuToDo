@@ -103,11 +103,11 @@ class ApiController extends BaseController
         }
         if( isset( $prefs[ "break" ] ) )
         {
-            $break = $prefs[ "break" ];
+            $this->task_break = $prefs[ "break" ];
         }
         else
         {
-            $break = 0;
+            $this->task_break = 0;
         }
 
         // begin scheduling with a single infinite time frame
@@ -121,8 +121,7 @@ class ApiController extends BaseController
         {
             foreach( $task_list as $task_name => $task )
             {
-                $ret = self::addTask( $tasks[ $task_name ] );
-                if( !$ret )
+                if( !self::addTask( $tasks[ $task_name ] ) )
                 {
                     $this->task_conflicts[] = $tasks[ $task_name ];
                 }
@@ -178,7 +177,7 @@ class ApiController extends BaseController
         // Sorted would mean earlier start time+date => implied higher priority
         foreach( $fixed_events as $event )
         {
-            if( self::addEvent( $event ) )
+            if( !self::addEvent( $event ) )
             {
                 $this->event_conflicts[] = $event->toArray();
             }
@@ -212,15 +211,14 @@ class ApiController extends BaseController
             while( $current_date->lte( $event->end_date ) )
             {
 
-                $empty_slot_id = self::findFixedSlot(
-                    $current_date->copy()->addMinutes( $event->start_time ),
-                    $current_date->copy()->addMinutes( $event->end_time ) );
+//                 $empty_slot_id = self::findFixedSlot(
+//                     $current_date->copy()->addMinutes( $event->start_time ),
+//                     $current_date->copy()->addMinutes( $event->end_time ) );
 
-                // TODO: What should be done here if not all recurrences can be scheduled?
-                if( is_null($empty_slot_id) )
-                {
-                    return false;
-                }
+//                 if( is_null($empty_slot_id) )
+//                 {
+//                     return false;
+//                 }
 
                 // Add event to schedule
                 $current_event_start = $current_date->copy()->addMinutes( $event->start_time );
@@ -231,15 +229,19 @@ class ApiController extends BaseController
                     $event );
 
                 // Update empty time slots
-                $time_slot = $this->empty_slots[ $empty_slot_id ];
-                array_splice( $this->empty_slots, $empty_slot_id, 1, array(
-                        array( 'start' => $time_slot[ 'start' ]->copy(),
-                               'end' => $current_event_start->copy() ),
-                        array( 'start' => $current_event_end->copy(),
-                               'end' => is_null($time_slot[ 'end' ]) ?
-                                        null : $time_slot[ 'end' ]->copy() )
-                    )
-                );
+                self::markFixedSlots(
+                    $current_date->copy()->addMinutes( $event->start_time ),
+                    $current_date->copy()->addMinutes( $event->end_time ) );
+
+//                 $time_slot = $this->empty_slots[ $empty_slot_id ];
+//                 array_splice( $this->empty_slots, $empty_slot_id, 1, array(
+//                         array( 'start' => $time_slot[ 'start' ]->copy(),
+//                                'end' => $current_event_start->copy() ),
+//                         array( 'start' => $current_event_end->copy(),
+//                                'end' => is_null($time_slot[ 'end' ]) ?
+//                                         null : $time_slot[ 'end' ]->copy() )
+//                     )
+//                 );
 
                 $current_date->addDays( self::DAYS_IN_WEEK );
             }
@@ -248,28 +250,99 @@ class ApiController extends BaseController
         return true;
     }
 
-    // Finds the time slot for fixed time events
-    // Input: start time of event
-    // Output: start time of empty time slot
-    //         duration of empty time slot
-    private function findFixedSlot( $event_start, $event_end )
+    private function markFixedSlots( $start_time, $end_time )
     {
-        foreach( $this->empty_slots as $slot_id => $empty_slot )
+        $low = 0;
+        $high = count( $this->empty_slots )-1;
+        while( true )
         {
-            if( $empty_slot[ 'start' ]->gt( $event_start ) )
+            assert( $low <= $high );
+            $mid = ( $low+$high )/2;
+            $time_slot = $this->empty_slots[ $mid ];
+
+            if( $start_time->gte( $time_slot[ 'start' ] )
+             && ( is_null( $time_slot[ 'end' ] )
+               || $start_time->lte( $time_slot[ 'end' ] ) ) )
             {
                 break;
             }
-
-            if( $event_start->gte( $empty_slot[ 'start' ] )
-             && ( is_null($empty_slot[ 'end' ]) || $event_end->lte( $empty_slot[ 'end' ] ) ) )
+            elseif( !is_null( $time_slot[ 'end' ] )
+                 && $start_time->gt( $time_slot[ 'end' ] ) )
             {
-                return $slot_id;
+                $low = $mid+1;
+            }
+            else
+            {
+                $high = $mid-1;
             }
         }
 
-        return null;
+        assert( isset( $mid ) );
+        while( $end_time->lte( $this->empty_slots[ $mid ][ 'start' ] ) )
+        {
+            $time_slot = $this->empty_slots[ $mid ];
+            $in_start = $start_time->gte( $time_slot[ 'start' ] );
+            $in_end = is_null( $time_slot[ 'end' ] ) ?
+                      true : $end_time->lte( $time_slot[ 'end' ] );
+
+            if( $in_start && $in_end )
+            {
+                array_splice( $this->empty_slots, $mid, 1, array(
+                        array( 'start' => $time_slot[ 'start' ]->copy(),
+                               'end' => $start_time->copy() ),
+                        array( 'start' => $end_time->copy(),
+                               'end' => is_null( $time_slot[ 'end' ] ) ?
+                                        null : $time_slot[ 'end' ]->copy() )
+                    )
+                );
+                $mid += 2;
+            }
+            elseif( $in_start && !$in_end )
+            {
+                array_splice( $this->empty_slots, $mid, 1, array(
+                        array( 'start' => $time_slot[ 'start' ]->copy(),
+                               'end' => $start_time->copy() )
+                    )
+                );
+                $mid += 1;
+            }
+            elseif( !$in_start && $in_end )
+            {
+                array_splice( $this->empty_slots, $mid, 1, array(
+                        array( 'start' => $end_time->copy(),
+                               'end' => is_null( $time_slot[ 'end' ] ) ?
+                                        null : $time_slot[ 'end' ]->copy() )
+                    )
+                );
+                $mid += 1;
+            }
+            else
+            {
+                array_splice( $this->empty_slots, $mid, 1 );
+            }
+        }
     }
+
+//     This function commented out just in case we ever want to do conflict checking for
+//     fixed events.
+//     private function findFixedSlot( $event_start, $event_end )
+//     {
+//         foreach( $this->empty_slots as $slot_id => $empty_slot )
+//         {
+//             if( $empty_slot[ 'start' ]->gt( $event_start ) )
+//             {
+//                 break;
+//             }
+// 
+//             if( $event_start->gte( $empty_slot[ 'start' ] )
+//              && ( is_null($empty_slot[ 'end' ]) || $event_end->lte( $empty_slot[ 'end' ] ) ) )
+//             {
+//                 return $slot_id;
+//             }
+//         }
+// 
+//         return null;
+//     }
 
     private function addTask( $task )
     {
