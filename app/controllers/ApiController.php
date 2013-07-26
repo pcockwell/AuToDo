@@ -93,15 +93,17 @@ class ApiController extends BaseController
         $this->empty_slots = array();
 
         // populate variables with caller preferences
-        if( isset( $prefs[ 'start' ] ) )
+        if( isset( $prefs[ 'schedule_start' ] ) )
         {
-            $this->schedule_start = new Carbon( $prefs[ 'start' ] );
+            $schedule_start = new Carbon( $prefs[ 'schedule_start' ] );
+            $this->schedule_start = $schedule_start->gt( Carbon::now() ) ?
+                                    $schedule_start : Carbon::now();
         }
         else
         {
             $this->schedule_start = Carbon::now();
         }
-        if( isset( $prefs[ "break" ] ) )
+        if( isset( $prefs[ 'break' ] ) )
         {
             $this->task_break = $prefs[ "break" ];
         }
@@ -109,13 +111,42 @@ class ApiController extends BaseController
         {
             $this->task_break = 0;
         }
+        if( isset( $prefs[ 'no_fixed_events' ] ) )
+        {
+            $show_fixed_events = false;
+        }
+        else
+        {
+            $show_fixed_events = true;
+        }
+        if( isset( $prefs[ 'schedule_until_latest' ] ) )
+        {
+            $schedule_until_latest = true;
+        }
+        else
+        {
+            $schedule_until_latest = false;
+        }
 
         // begin scheduling with a single infinite time frame
         $this->empty_slots[] = array( 'start' => $this->schedule_start,
                                       'end' => null );
-        self::fillFixedEvents( $fixed_events );
 
         $prioritized_tasks = self::sortTasks( $tasks );
+
+        // Find last due date
+        $last_due_time = null;
+        foreach( $prioritized_tasks as $priority => $task_list )
+        {
+            $curr_last_due_time = end( $task_list );
+            if( is_null( $last_due_time ) || $curr_last_due_time->gt( $last_due_time ) )
+            {
+                $last_due_time = $curr_last_due_time->copy();
+            }
+        }
+
+        // Partition empty slots
+        self::fillFixedEvents( $fixed_events, $last_due_time, false, true );
 
         foreach( $prioritized_tasks as $priority => $task_list )
         {
@@ -126,6 +157,21 @@ class ApiController extends BaseController
                     $this->task_conflicts[] = $tasks[ $task_name ];
                 }
             }
+        }
+
+        // Add fixed events to schedule
+        if( $show_fixed_events )
+        {
+            if( $schedule_until_latest )
+            {
+                $last_due_time = null;
+            }
+            else
+            {
+                $last_due_time = end( $this->schedule );
+                $last_due_time = $last_due_time[ 'end' ]->copy();
+            }
+            self::fillFixedEvents( $fixed_events, $last_due_time, true, false );
         }
 
         // Return the schedule to the caller.
@@ -171,20 +217,21 @@ class ApiController extends BaseController
         return $prioritized_tasks;
     }
 
-    private function fillFixedEvents( $fixed_events )
+    private function fillFixedEvents( $fixed_events, $last_due_time,
+                                      $fill_schedule, $fill_slots )
     {
         // TODO: Will fixed events have collisions?  Do they need to be sorted?
         // Sorted would mean earlier start time+date => implied higher priority
         foreach( $fixed_events as $event )
         {
-            if( !self::addEvent( $event ) )
+            if( !self::addEvent( $event, $last_due_time, $fill_schedule, $fill_slots ) )
             {
                 $this->event_conflicts[] = $event->toArray();
             }
         }
     }
 
-    private function addEvent( $event )
+    private function addEvent( $event, $last_due_time, $fill_schedule, $fill_slots )
     {
         $event_start_date = $event->start_date->gt( $this->schedule_start ) ?
                             $event->start_date->copy() : $this->schedule_start->copy();
@@ -193,6 +240,17 @@ class ApiController extends BaseController
             $event_start_date->addDay();
         }
         $event_start_date->startOfDay();
+
+        if( is_null( $last_due_time ) )
+        {
+            $event_end_date = $event->end_date->copy();
+        }
+        else
+        {
+            $event_end_date = $event->end_date->lt( $last_due_time ) ?
+                              $event->end_date->copy() : $last_due_time;
+        }
+        $event_end_date->endOfDay();
 
         // Schedule each recurrence of this event
         $event_recurrences = $event->getRecurrences();
@@ -208,7 +266,7 @@ class ApiController extends BaseController
 
             $current_date->addDays( $diff );
 
-            while( $current_date->lte( $event->end_date ) )
+            while( $current_date->lte( $event_end_date ) )
             {
 
 //                 $empty_slot_id = self::findFixedSlot(
@@ -221,18 +279,26 @@ class ApiController extends BaseController
 //                 }
 
                 // Add event to schedule
-                $current_event_start = $current_date->copy()->addMinutes( $event->start_time );
-                $current_event_end = $current_date->copy()->addMinutes( $event->end_time );
-                self::insertSchedule(
-                    $current_event_start,
-                    $current_event_end,
-                    $event );
+                if( $fill_schedule )
+                {
+                    $current_event_start = $current_date->copy()->addMinutes( $event->start_time );
+                    $current_event_end = $current_date->copy()->addMinutes( $event->end_time );
+                    self::insertSchedule(
+                        $current_event_start,
+                        $current_event_end,
+                        $event );
+                }
 
                 // Update empty time slots
-                self::markFixedSlots(
-                    $current_date->copy()->addMinutes( $event->start_time ),
-                    $current_date->copy()->addMinutes( $event->end_time ) );
+                if( $fill_slots )
+                {
+                    self::markFixedSlots(
+                        $current_date->copy()->addMinutes( $event->start_time ),
+                        $current_date->copy()->addMinutes( $event->end_time ) );
+                }
 
+//     This part commented out just in case we ever want to do conflict checking for
+//     fixed events.
 //                 $time_slot = $this->empty_slots[ $empty_slot_id ];
 //                 array_splice( $this->empty_slots, $empty_slot_id, 1, array(
 //                         array( 'start' => $time_slot[ 'start' ]->copy(),
@@ -257,7 +323,7 @@ class ApiController extends BaseController
         while( true )
         {
             assert( $low <= $high );
-            $mid = ( $low+$high )/2;
+            $mid = floor( ( $low+$high )/2 );
             $time_slot = $this->empty_slots[ $mid ];
 
             if( $start_time->gte( $time_slot[ 'start' ] )
@@ -278,7 +344,8 @@ class ApiController extends BaseController
         }
 
         assert( isset( $mid ) );
-        while( $end_time->lte( $this->empty_slots[ $mid ][ 'start' ] ) )
+        while( is_null( $this->empty_slots[ $mid ][ 'end' ] )
+            || $start_time->lte( $this->empty_slots[ $mid ][ 'end' ] ) )
         {
             $time_slot = $this->empty_slots[ $mid ];
             $in_start = $start_time->gte( $time_slot[ 'start' ] );
@@ -295,7 +362,7 @@ class ApiController extends BaseController
                                         null : $time_slot[ 'end' ]->copy() )
                     )
                 );
-                $mid += 2;
+                break;
             }
             elseif( $in_start && !$in_end )
             {
@@ -314,7 +381,7 @@ class ApiController extends BaseController
                                         null : $time_slot[ 'end' ]->copy() )
                     )
                 );
-                $mid += 1;
+                break;
             }
             else
             {
