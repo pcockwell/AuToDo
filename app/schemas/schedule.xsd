@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://autodo.org/schedule.xsd"
+    elementFormDefault="qualified"
+    xmlns="http://autodo.org/schedule.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:autodo="http://autodo.org/base.xsd"
+>
+
+  <xs:import namespace="http://autodo.org/base.xsd" schemaLocation="base.xsd" />
+  <xs:element name="GetSchedule">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="task" type="autodo:Task" minOccurs="0" maxOccurs="unbounded" />
+        <xs:element name="event" type="autodo:FixedEvent" minOccurs="0" maxOccurs="unbounded" />
+        <xs:element name="pref" type="autodo:SchedulePref" minOccurs="0" maxOccurs="unbounded" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
