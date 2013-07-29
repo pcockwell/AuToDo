@@ -1,0 +1,25 @@
+﻿<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+           xmlns:tns="http://autodo.org/base.xsd"
+           targetNamespace="http://autodo.org/base.xsd"
+           elementFormDefault="qualified">
+  <xsd:complexType name="Task">
+    <xsd:sequence>
+      <xsd:element name="user_id" type="xsd:int" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="priority" type="xsd:int" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="due" type="xsd:date" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="duration" type="xsd:integer" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="complete" type="xsd:boolean" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="FixedEvent">
+    <xsd:sequence>
+      <xsd:element name="user_id" type="xsd:int" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="start_dateTime" type="xsd:dateTime" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="end_dateTime" type="xsd:dateTime" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="recurrences" type="xsd:int" minOccurs="1" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+</xsd:schema>
