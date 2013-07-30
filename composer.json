@@ -10,7 +10,6 @@
 	},
 	"autoload": {
 		"classmap": [
-			"app/exceptions.php",
 			"app/commands",
 			"app/controllers",
 			"app/models",

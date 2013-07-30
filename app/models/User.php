@@ -1,5 +1,6 @@
 <?php
 
+use Autodo\Exception\ValidationException;
 use Illuminate\Auth\UserInterface;
 use Illuminate\Auth\Reminders\RemindableInterface;
 
@@ -16,7 +17,7 @@ class User extends Eloquent implements UserInterface, RemindableInterface
 	protected $fillable = array('name', 'email');
 
 	protected static $rules = array(
-		'name' => array('required', 'alpha', 'min:5'),
+		'name' => array('required', 'alpha_space', 'min:5'),
 		'email' => array('required', 'email')
 	);
 
@@ -67,6 +68,16 @@ class User extends Eloquent implements UserInterface, RemindableInterface
 	public function getReminderEmail()
 	{
 		return $this->email;
+	}
+
+	public function tasks()
+	{
+		return $this->hasMany('Task');
+	}
+
+	public function fixedevents()
+	{
+		return $this->hasMany('FixedEvent');
 	}
 
 	public static function getTestUser()

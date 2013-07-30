@@ -1,6 +1,7 @@
 <?php
 
 use Carbon\Carbon;
+use Autodo\Exception\ValidationException;
 
 class Task extends Eloquent
 {
@@ -14,11 +15,10 @@ class Task extends Eloquent
 	 */
 	protected $table = 'tasks';
 
-	protected $fillable = array('user_id', 'name', 'priority', 'due', 'duration', 'complete');
+	protected $fillable = array('name', 'priority', 'due', 'duration', 'complete');
 
 	protected static $rules = array(
-		'user_id' => array('required', 'integer', 'exists:users,id'),
-		'name' => array('required', 'alpha_num', 'min:1'),
+		'name' => array('required', 'alpha_num_space', 'min:1'),
 		'priority' => array('required', 'integer'),
 		'due' => array('required', 'date'),
 		'duration' => array('required', 'integer', 'min:1'),
@@ -46,6 +46,11 @@ class Task extends Eloquent
             }
         }
         parent::__construct($attributes, $exists);
+    }
+
+    public function user()
+    {
+        $this->belongsTo('User');
     }
 
 	public function getDates()

@@ -59,29 +59,38 @@ Route::filter('json', function(){
     }
     else
     {
-        return "Input provided was not JSON";
+        if (Request::getMethod() != 'GET')
+        {
+            // prepare a response, unsupported POST content
+            $invalid_text = 'The request could not be fulfilled. Input provided was not JSON.';
+            $response = Response::make( $invalid_text, 400 );
+            return $response;
+        }
     }
 });
 
 Route::when('*.json', 'json');
 
-// Route to view users
-//TODO This should not be accessible
-Route::get('users', function()
+Route::group(array('suffix' => array('.json', '.xml'), 'prefix' => 'api'), function()
 {
-    $users = User::all();
-
-    return View::make('users')->with('users', $users);
-});
-
-Route::group(array('suffix' => array('.json', '.xml')), function()
-{
+    Route::get('user/{user_id}/schedule', 'ApiController@userSchedule')->where('user_id', '[0-9]+');
     // Controller to handle user accounts.
-    Route::controller('user', 'UserController');
+    Route::resource('user', 'UserController', array('except' => array('index', 'create', 'edit')));
+    // Controller to handle user accounts.
+    Route::resource('user.task', 'TaskController', array('except' => array('create', 'edit')));
+    // Controller to handle user accounts.
+    Route::resource('user.fixedevent', 'FixedEventController', array('except' => array('create', 'edit')));
+    // Controller to handle user accounts.
+    Route::resource('user.preferences', 'PreferencesController', array('except' => array('show', 'create', 'edit')));
 
-    // Controller for base API function.
-    Route::controller('api', 'ApiController');
+    //Must always be the last entry in the file
+    Route::controller('/', 'ApiController');
 });
 
-//Must always be the last entry in the file
-Route::controller('/', 'ApiController');
+/*
+$routes = Route::getRoutes();
+foreach ($routes as $name => $r)
+{
+    echo $name . ": " . $r->getPath() . "<br/>";
+    //echo print_r($r->getParameters(), true) . "<br/>";
+}

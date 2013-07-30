@@ -1,6 +1,7 @@
 <?php
 
 use Carbon\Carbon;
+use Autodo\Exception\ValidationException;
 
 class FixedEvent extends Eloquent 
 {
@@ -14,11 +15,10 @@ class FixedEvent extends Eloquent
 	 */
 	protected $table = 'fixed_events';
 
-	protected $fillable = array('user_id', 'name', 'start_time', 'end_time', 'start_date', 'end_date', 'recurrences');
+	protected $fillable = array('name', 'start_time', 'end_time', 'start_date', 'end_date', 'recurrences');
 
     protected static $rules = array(
-        'user_id' => array('required', 'integer', 'exists:users,id'),
-        'name' => array('required', 'alpha', 'min:1'),
+        'name' => array('required', 'alpha_num_space', 'min:1'),
         'start_time' => array('required', 'integer'),
         'end_time' => array('required', 'integer'),
         'start_date' => array('required', 'date'),
@@ -47,6 +47,11 @@ class FixedEvent extends Eloquent
             }
         }
         parent::__construct($attributes, $exists);
+    }
+
+    public function user()
+    {
+        $this->belongsTo('User');
     }
 
 	public function getDates()

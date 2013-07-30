@@ -23,8 +23,7 @@ class ApiController extends BaseController
 
     public function missingMethod($parameters)
     {
-        $user = User::getTestUser();
-        return "Hello $user->name";
+        return "ApiController@missingMethod";
     }
 
     public function getPhpinfo()
@@ -33,52 +32,41 @@ class ApiController extends BaseController
     }
 
     // Make max priority accessible.
-    public function getMaxpriority()
+    private static function maxPriority()
     {
         return Task::TASK_MAX_PRIORITY;
     }
 
     public function postSchedule()
     {
-        $sch = null;
-        if (Request::is('api/schedule*'))
-        {
-            // valid json request
-            $data = Input::all();
-            // error checking omitted
-            $tasks = array();
-            $fixed_events = array();
-            $prefs = null;
+        $sch = null; 
+        // valid json request
+        $data = Input::all();
+        // error checking omitted
+        $tasks = array();
+        $fixed_events = array();
+        $prefs = null;
 
-            if (isset($data['Task']))
-            {
-                foreach ($data['Task'] as $task)
-                {
-                    $tasks[$task->name] = $task;
-                }
-            }
-            if (isset($data['FixedEvent']))
-            {
-                foreach ($data['FixedEvent'] as $fixed_event)
-                {
-                    $fixed_events[$fixed_event->name] = $fixed_event;
-                }
-            }
-
-            if (isset($data['prefs']))
-            {
-                $prefs = $data['prefs'];
-            }
-            $sch = $this->createSchedule($tasks, $fixed_events, $prefs);
-        }
-        else
+        if (isset($data['Task']))
         {
-            // prepare a response, unsupported POST content
-            $invalid_text = 'The request could not be fulfilled.\n
-                An unsupported content type was used.';
-            $response = Response::make( $invalid_text, 400 );
-            return $response;
+            foreach ($data['Task'] as $task)
+            {
+                $tasks[$task->name] = $task;
+            }
         }
+        if (isset($data['FixedEvent']))
+        {
+            foreach ($data['FixedEvent'] as $fixed_event)
+            {
+                $fixed_events[$fixed_event->name] = $fixed_event;
+            }
+        }
+
+        if (isset($data['prefs']))
+        {
+            $prefs = $data['prefs'];
+        }
+        $sch = $this->createSchedule($tasks, $fixed_events, $prefs);
         // prepare a 200 OK response
         $response = Response::make( $sch, 200 );
         return $response;

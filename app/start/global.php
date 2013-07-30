@@ -15,7 +15,7 @@ ClassLoader::addDirectories(array(
 
 	app_path().'/commands',
 	app_path().'/controllers',
-	app_path().'/models',
+    app_path().'/models',
 	app_path().'/database/seeds',
 
 ));
@@ -91,4 +91,13 @@ Validator::extend('validate_recurrence', function($attribute, $value, $parameter
     if (!is_array($decoded_value) || count($decoded_value) == 0) return false;
 
     return true;
+});
+
+Validator::extend('alpha_space', function($attr, $value) {
+    return preg_match('/^([a-z\x20])+$/i', $value);
+});
+
+Validator::extend('alpha_num_space', function($attribute, $value)
+{
+    return preg_match('/^([-a-z0-9\x20])+$/i', $value);
 });

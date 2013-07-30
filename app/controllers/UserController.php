@@ -1,65 +1,81 @@
 <?php
 
-class UserController extends BaseController
-{
+use Autodo\Exception\ValidationException;
+
+class UserController extends \BaseController {
 
     /**
-     *  Post arguments: name, email
-     *  Create a user with name 'name', and email 'email'
+     * Store a newly created resource in storage.
+     *
+     * @return Response
      */
-    public function postCreate()
+    public function store()
     {
-        if (Request::is('user/create*'))
+        try
         {
-            if (!Input::has('name')) {
-                // Return missing name parameter
-                return Response::make( 'Missing name parameter', 400 );
-            }
-            if (!Input::has('email')) {
-                // Return missing email parameter
-                return Response::make( 'Missing email parameter', 400 );
-            }
-            $user_name = Input::get('name');
-            $user_email = Input::get('email');
+            $user = User::create(Input::all());
+        }
+        catch(ValidationException $v)
+        {
+            return Response::make( $v->get(), 500 );
+        }
 
-            $user = User::create(array('name' => $user_name,
-                                       'email' => $user_email));
-
-            if (isset($user) && $user != false) {
-                return Response::make( '', 201 );
-            } else {
-                return Response::make( '', 500 );
-            }
+        if (isset($user) && $user != false) 
+        {
+            return Response::make( $user, 201 );
+        } 
+        else 
+        {
+            return Response::make( 'Failed to save user', 500 );
         }
     }
 
-
     /**
-     *  Post arguments: name
-     *  Delete the user with name 'name' if they exist.
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return Response
      */
-    public function postDelete()
+    public function show($user_id)
     {
-        if (Request::is('user/delete*'))
+        $user = User::find($id);
+
+        if (!isset($user) || $user == false)
         {
-            if (!Input::has('name'))
-            {
-                // Return missing name parameter
-                return Response::make( 'Missing name parameter', 400 );
-            }
-            $user_name = Input::get('name');
-
-            $user_model = User::where('name', '=', $user_name)->first();
-
-            if (!isset($user_model) || $user_model == false)
-            {
-                return Response::make( 'No user with name '.$user_name, 400 );
-            }
-            $user_model->delete();
-            return Response::make( 'User deleted', 200 );
+            return Response::make( 'No user with id '.$id, 400 );
+        }
+        else   
+        {
+            return Response::make( $user, 200 );
         }
     }
 
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function update($id)
+    {
+        //
+    }
 
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function destroy($id)
+    {
+        $user = User::find($id);
 
+        if (!isset($user) || $user == false)
+        {
+            return Response::make( 'No user with id '.$id, 400 );
+        }
+        $user_model->user();
+        return Response::make( 'User deleted', 200 );
+    }
 }
