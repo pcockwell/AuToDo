@@ -87,6 +87,11 @@ Route::group(array('suffix' => array('.json', '.xml'), 'prefix' => 'api'), funct
     Route::controller('/', 'ApiController');
 });
 
+Route::get('/', function()
+{
+    return Redirect::to('http://pcockwell.github.io/AuToDo/');
+});
+
 /*
 $routes = Route::getRoutes();
 foreach ($routes as $name => $r)
