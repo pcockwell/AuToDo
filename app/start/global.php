@@ -101,3 +101,8 @@ Validator::extend('alpha_num_space', function($attribute, $value)
 {
     return preg_match('/^([-a-z0-9\x20])+$/i', $value);
 });
+
+Validator::extend('boolean', function($attribute, $value)
+{
+    return $value === true || $value === false;
+});

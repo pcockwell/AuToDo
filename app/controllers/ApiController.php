@@ -37,6 +37,31 @@ class ApiController extends BaseController
         return Task::TASK_MAX_PRIORITY;
     }
 
+    public function userSchedule($user_id)
+    {
+        $sch = null; 
+        $user = User::find($user_id);
+        // error checking omitted
+        $tasks = array();
+        $fixed_events = array();
+        $prefs = $user->preferences ? : new Preference;
+
+        foreach ($user->tasks()->get() as $task)
+        {
+            $tasks[$task->name] = $task;
+        }
+
+        foreach ($user->fixedevents()->get() as $fixed_event)
+        {
+            $fixed_events[$fixed_event->name] = $fixed_event;
+        }
+
+        $sch = $this->createSchedule($tasks, $fixed_events, $prefs);
+        // prepare a 200 OK response
+        $response = Response::make( $sch, 200 );
+        return $response;
+    }
+
     public function postSchedule()
     {
         $sch = null; 
@@ -45,7 +70,8 @@ class ApiController extends BaseController
         // error checking omitted
         $tasks = array();
         $fixed_events = array();
-        $prefs = null;
+        $prefs = new Preference;
+        $sched_start = null;
 
         if (isset($data['Task']))
         {
@@ -62,17 +88,23 @@ class ApiController extends BaseController
             }
         }
 
-        if (isset($data['prefs']))
+        if (isset($data['Preference']))
         {
-            $prefs = $data['prefs'];
+            $prefs = $data['Preference'];
         }
-        $sch = $this->createSchedule($tasks, $fixed_events, $prefs);
+        //return Response::make(print_r($data, true), 200);
+
+        if (isset($data['schedule_start']))
+        {
+            $sched_start = $data['schedule_start'];
+        }
+        $sch = $this->createSchedule($tasks, $fixed_events, $prefs, $sched_start);
         // prepare a 200 OK response
         $response = Response::make( $sch, 200 );
         return $response;
     }
 
-    private function createSchedule( $tasks, $fixed_events, $prefs )
+    private function createSchedule( $tasks, $fixed_events, $prefs, $sched_start = null )
     {
         // Reset arrays for the start of the current schedule request
         $this->task_conflicts = array();
@@ -81,9 +113,9 @@ class ApiController extends BaseController
         $this->empty_slots = array();
 
         // populate variables with caller preferences
-        if( isset( $prefs[ 'schedule_start' ] ) )
+        if( !is_null( $sched_start ) )
         {
-            $schedule_start = new Carbon( $prefs[ 'schedule_start' ] );
+            $schedule_start = new Carbon( $sched_start );
             $this->schedule_start = $schedule_start->gt( Carbon::now() ) ?
                                     $schedule_start : Carbon::now();
         }
@@ -91,30 +123,10 @@ class ApiController extends BaseController
         {
             $this->schedule_start = Carbon::now();
         }
-        if( isset( $prefs[ 'break' ] ) )
-        {
-            $this->task_break = $prefs[ "break" ];
-        }
-        else
-        {
-            $this->task_break = 0;
-        }
-        if( isset( $prefs[ 'no_fixed_events' ] ) )
-        {
-            $show_fixed_events = false;
-        }
-        else
-        {
-            $show_fixed_events = true;
-        }
-        if( isset( $prefs[ 'schedule_until_latest' ] ) )
-        {
-            $schedule_until_latest = true;
-        }
-        else
-        {
-            $schedule_until_latest = false;
-        }
+
+        $this->task_break = $prefs->break;
+        $show_fixed_events = $prefs->show_fixed_events;
+        $schedule_until_latest = $prefs->schedule_until_latest;
 
         // begin scheduling with a single infinite time frame
         $this->empty_slots[] = array( 'start' => $this->schedule_start,

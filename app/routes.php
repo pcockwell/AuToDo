@@ -12,8 +12,10 @@
 */
 
 Route::filter('json', function(){
-    $new_input = array(
-        'errors' => array()
+    $new_input = array();
+    $errors = array(
+        "success" => false,
+        "errors" => array()
     );
     if (Input::isJson())
     {
@@ -26,28 +28,43 @@ Route::filter('json', function(){
                 $class_name = $class->getShortName();
                 if (is_array($content))
                 {
+                    $single_item = false;
                     foreach($content as $content_item)
                     {
+                        if (!is_array($content_item))
+                        {
+                            $single_item = true;
+                            break;
+                        }
                         try
                         {
                             $new_input[$class_name][] = $class->newInstance($content_item);
                         }
                         catch (ValidationException $v)
                         {
-                            $new_input['errors'] = array_merge($new_input['errors'], $v->get());
+                            $errors['errors'] = array_merge($errors['errors'], $v->get());
+                        }
+                    }
+
+                    if ($single_item)
+                    {
+                        try
+                        {
+                            $new_input[$class_name] = $class->newInstance($content);
+                        }
+                        catch (ValidationException $v)
+                        {
+                            $errors['errors'] = array_merge($errors['errors'], $v->get());
+                        }
+                        catch (ErrorException $e)
+                        {
+                            $errors['errors'][] = 'Invalid content supplied for ' . $class_name . ' object';
                         }
                     }
                 }
                 else
                 {
-                    try
-                    {
-                        $new_input[$class_name][] = $class->newInstance($content);
-                    }
-                    catch (ValidationException $v)
-                    {
-                        $new_input['errors'] = array_merge($new_input['errors'], $v->get());
-                    }
+                    $errors['errors'][] = 'Invalid content supplied for ' . $class_name . ' object';
                 }
             }
             else
@@ -66,6 +83,12 @@ Route::filter('json', function(){
             $response = Response::make( $invalid_text, 400 );
             return $response;
         }
+    }
+
+    if (count($errors['errors']) > 0)
+    {
+        $response = Response::make( $errors, 400 );
+        return $response;
     }
 });
 
@@ -99,3 +122,4 @@ foreach ($routes as $name => $r)
     echo $name . ": " . $r->getPath() . "<br/>";
     //echo print_r($r->getParameters(), true) . "<br/>";
 }
+*/

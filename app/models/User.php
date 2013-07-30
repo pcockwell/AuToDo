@@ -80,6 +80,11 @@ class User extends Eloquent implements UserInterface, RemindableInterface
 		return $this->hasMany('FixedEvent');
 	}
 
+	public function preferences()
+	{
+		return $this->hasOne('Preference');
+	}
+
 	public static function getTestUser()
 	{
 		return User::find(1);	
