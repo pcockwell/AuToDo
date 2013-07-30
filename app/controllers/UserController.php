@@ -36,7 +36,7 @@ class UserController extends \BaseController {
      * @param  int  $id
      * @return Response
      */
-    public function show($user_id)
+    public function show($id)
     {
         $user = User::find($id);
 
