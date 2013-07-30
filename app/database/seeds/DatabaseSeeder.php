@@ -11,6 +11,7 @@ class DatabaseSeeder extends Seeder {
 	{
 		Eloquent::unguard();
 
+        DB::statement("SET FOREIGN_KEY_CHECKS=0");
 		$this->call('UserTableSeeder');	
         $this->command->info('User table seeded!');
 		$this->call('FixedEventTableSeeder');	
@@ -19,6 +20,7 @@ class DatabaseSeeder extends Seeder {
         $this->command->info('Task table seeded!');
 		$this->call('PreferenceTableSeeder');	
         $this->command->info('Preference table seeded!');
+        DB::statement("SET FOREIGN_KEY_CHECKS=1");
 	}
 
 }

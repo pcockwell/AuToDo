@@ -6,8 +6,8 @@ class TaskTableSeeder extends Seeder {
 
     public function run()
     {
-        DB::table('fixed_events')->delete();
-
+        DB::table('tasks')->truncate();
+        
         $test_user_id = User::where('name', 'Test User')->first()->id;
         $pcockwell_id = User::where('name', 'Patrick Cockwell')->first()->id;
         $ochow_id = User::where('name', 'Oscar Chow')->first()->id;
@@ -29,83 +29,97 @@ class TaskTableSeeder extends Seeder {
         $long_duration = 120;
 
         $tasks = array(
-            $test_user_id => array(
-                'name' => 'test user task 1',
-                'due' => $due_soon->toDateTimeString(),
-                'duration' => $short_duration,
-                'priority' => $low_priority
+            $test_user_id =>  array(
+                array(
+                    'name' => 'test user task 1',
+                    'due' => $due_soon->toDateTimeString(),
+                    'duration' => $short_duration,
+                    'priority' => $low_priority
+                ),
+                array(
+                    'name' => 'test user task 2',
+                    'due' => $due_soon->toDateTimeString(),
+                    'duration' => $long_duration,
+                    'priority' => $high_priority
+                ),
+                array(
+                    'name' => 'test user task 3',
+                    'due' => $due_far_away->toDateTimeString(),
+                    'duration' => $long_duration,
+                    'priority' => $high_priority
+                ),
+                array(
+                    'name' => 'test user task 4',
+                    'due' => $due_medium->toDateTimeString(),
+                    'duration' => $medium_duration,
+                    'priority' => $medium_priority
+                ),
             ),
-            $test_user_id => array(
-                'name' => 'test user task 2',
-                'due' => $due_soon->toDateTimeString(),
-                'duration' => $long_duration,
-                'priority' => $high_priority
+            $pcockwell_id =>  array(
+                array(
+                    'name' => 'pcockwell task 1',
+                    'due' => $due_medium->toDateTimeString(),
+                    'duration' => $short_duration,
+                    'priority' => $high_priority
+                ),
+                array(
+                    'name' => 'pcockwell task 2',
+                    'due' => $due_soon->toDateTimeString(),
+                    'duration' => $long_duration,
+                    'priority' => $low_priority
+                ),
             ),
-            $test_user_id => array(
-                'name' => 'test user task 3',
-                'due' => $due_far_away->toDateTimeString(),
-                'duration' => $long_duration,
-                'priority' => $high_priority
+            $ochow_id =>  array(
+                array(
+                    'name' => 'ochow task 1',
+                    'due' => $due_medium->toDateTimeString(),
+                    'duration' => $short_duration,
+                    'priority' => $high_priority
+                ),
+                array(
+                    'name' => 'ochow task 2',
+                    'due' => $due_soon->toDateTimeString(),
+                    'duration' => $long_duration,
+                    'priority' => $low_priority
+                ),
             ),
-            $test_user_id => array(
-                'name' => 'test user task 4',
-                'due' => $due_medium->toDateTimeString(),
-                'duration' => $medium_duration,
-                'priority' => $medium_priority
-            ),
-            $pcockwell_id => array(
-                'name' => 'pcockwell task 1',
-                'due' => $due_medium->toDateTimeString(),
-                'duration' => $short_duration,
-                'priority' => $high_priority
-            ),
-            $pcockwell_id => array(
-                'name' => 'pcockwell task 2',
-                'due' => $due_soon->toDateTimeString(),
-                'duration' => $long_duration,
-                'priority' => $low_priority
-            ),
-            $ochow_id => array(
-                'name' => 'ochow task 1',
-                'due' => $due_medium->toDateTimeString(),
-                'duration' => $short_duration,
-                'priority' => $high_priority
-            ),
-            $ochow_id => array(
-                'name' => 'ochow task 2',
-                'due' => $due_soon->toDateTimeString(),
-                'duration' => $long_duration,
-                'priority' => $low_priority
-            ),
-            $smiclette_id => array(
-                'name' => 'smiclette task 1',
-                'due' => $due_medium->toDateTimeString(),
-                'duration' => $short_duration,
-                'priority' => $high_priority
-            ),
-            $smiclette_id => array(
-                'name' => 'smiclette task 2',
-                'due' => $due_soon->toDateTimeString(),
-                'duration' => $long_duration,
-                'priority' => $low_priority
+            $smiclette_id =>  array(
+                array(
+                    'name' => 'smiclette task 1',
+                    'due' => $due_medium->toDateTimeString(),
+                    'duration' => $short_duration,
+                    'priority' => $high_priority
+                ),
+                array(
+                    'name' => 'smiclette task 2',
+                    'due' => $due_soon->toDateTimeString(),
+                    'duration' => $long_duration,
+                    'priority' => $low_priority
+                ),
             ),
             $tzhang_id => array(
-                'name' => 'tzhang task 1',
-                'due' => $due_medium->toDateTimeString(),
-                'duration' => $short_duration,
-                'priority' => $high_priority
-            ),
-            $tzhang_id => array(
-                'name' => 'tzhang task 2',
-                'due' => $due_soon->toDateTimeString(),
-                'duration' => $long_duration,
-                'priority' => $low_priority
-            ),
+                array(
+                    'name' => 'tzhang task 1',
+                    'due' => $due_medium->toDateTimeString(),
+                    'duration' => $short_duration,
+                    'priority' => $high_priority
+                ),
+                array(
+                    'name' => 'tzhang task 2',
+                    'due' => $due_soon->toDateTimeString(),
+                    'duration' => $long_duration,
+                    'priority' => $low_priority
+                ),
+            )
         );
 
-        foreach ($tasks as $user_id => $task)
+        foreach ($tasks as $user_id => $task_list)
         {
-            User::find($user_id)->tasks()->save(new Task($task));
+            $user = User::find($user_id);
+            foreach ($task_list as $task)
+            {
+                $user->tasks()->save(new Task($task));
+            }
         }
     }
 }

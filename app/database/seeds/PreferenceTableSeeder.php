@@ -4,8 +4,8 @@ class PreferenceTableSeeder extends Seeder {
 
     public function run()
     {
-        DB::table('preferences')->delete();
-
+        DB::table('preferences')->truncate();
+        
         $test_user_id = User::where('name', 'Test User')->first()->id;
         $pcockwell_id = User::where('name', 'Patrick Cockwell')->first()->id;
         $ochow_id = User::where('name', 'Oscar Chow')->first()->id;
