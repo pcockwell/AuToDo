@@ -1,6 +1,17 @@
 <?php
 
-define('LARAVEL_START', microtime(true));
+/*
+|--------------------------------------------------------------------------
+| Set A Constant To Record When Laravel Started
+|--------------------------------------------------------------------------
+| samiclet: I wrapped this in a !defined check because running phpunit
+|   with process isolation (which causes it to not exit early upon fatal
+|   errors) does not tear down bootstrapped constants correctly.
+*/
+if (!defined('LARAVEL_START'))
+{
+    define('LARAVEL_START', microtime(true));
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -29,7 +40,7 @@ require __DIR__.'/../vendor/autoload.php';
 
 if (file_exists($compiled = __DIR__.'/compiled.php'))
 {
-	require $compiled;
+       require $compiled;
 }
 
 /*
