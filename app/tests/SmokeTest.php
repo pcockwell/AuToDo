@@ -5,17 +5,17 @@ class SmokeTest extends TestCase {
     /**
      * Test that the server is up.
      *
-     * Hits the 'hello' page.
-     * Should produce "Hello `name`"
+     * Should hit the base link redirect to github io page.
      *
      * @return void
      */
-    public function testServerUp()
+    public function testDefaultRedirect()
     {
-        $test_name = 'TEST';
-        $response = $this->call('GET', 'api/name/'.$test_name);
-        $this->assertEquals('Hello '.$test_name, 
-            $response->getContent());
+        $this->client->restart();
+
+        $response = $this->call('GET', '/');
+        $this->assertRedirectedTo('http://pcockwell.github.io/AuToDo/');
+        print $response;
     }
 
 }
