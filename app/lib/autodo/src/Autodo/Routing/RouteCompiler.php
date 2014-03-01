@@ -149,11 +149,11 @@ class RouteCompiler extends BaseRouteCompiler
         $suffix = $route->getOption('_suffix') ?: '';
         if (!is_array($suffix))
         {
-            $regexp .= '(' . $suffix . ')?';
+            $regexp .= '(' . $suffix . ')';
         }
         else
         {
-            $regexp .= '('.implode('|', $suffix).')?';
+            $regexp .= '('.implode('|', $suffix).')';
         }
 
         return array(
