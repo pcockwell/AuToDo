@@ -39,7 +39,6 @@ class FixedEvent extends Eloquent
         {
             self::$rules['start_time'][] = 'between:0,'.self::MINUTES_IN_DAY;
             self::$rules['end_time'][] = 'between:0,'.self::MINUTES_IN_DAY;
-            self::$rules['end_date'][] = 'after:'.Carbon::now()->toDateTimeString();
 
             $validator = Validator::make($attributes, self::$rules);
             if ($validator->fails()){
