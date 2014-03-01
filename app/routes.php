@@ -11,13 +11,13 @@
 |
 */
 
-Route::filter('json', function(){
+Route::filter('apiInputFilter', function(){
     $new_input = array();
     $errors = array(
         "success" => false,
         "errors" => array()
     );
-    if (Input::isJson())
+    if (Input::isJson() || Input::isXml())
     {
         foreach(Input::all() as $key => $content)
         {
@@ -79,7 +79,7 @@ Route::filter('json', function(){
         if (Request::getMethod() != 'GET')
         {
             // prepare a response, unsupported POST content
-            $invalid_text = 'The request could not be fulfilled. Input provided was not JSON.';
+            $invalid_text = 'The request could not be fulfilled. Input provided was not an accepted data format.';
             $response = Response::make( $invalid_text, 400 );
             return $response;
         }
@@ -92,9 +92,9 @@ Route::filter('json', function(){
     }
 });
 
-Route::when('*.json', 'json');
+Route::when('api/*', 'apiInputFilter');
 
-Route::group(array('suffix' => array('.json', '.xml'), 'prefix' => 'api'), function()
+Route::group(array('prefix' => 'api'), function()
 {
     Route::get('user/{user_id}/schedule', 'ApiController@userSchedule')->where('user_id', '[0-9]+');
     // Controller to handle user accounts.
@@ -122,5 +122,4 @@ foreach ($routes as $name => $r)
     echo $name . ": " . $r->getPath() . "<br/>";
     //echo print_r($r->getParameters(), true) . "<br/>";
 }
-die();
 */

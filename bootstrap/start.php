@@ -2,6 +2,19 @@
 
 /*
 |--------------------------------------------------------------------------
+| Extend The Request Class
+|--------------------------------------------------------------------------
+|
+| The first thing we will do change the request class so that extenstions
+| ti the Input and Request classes get incorporated
+|
+*/
+use Illuminate\Foundation\Application;
+
+Application::requestClass('Autodo\Http\Request');
+
+/*
+|--------------------------------------------------------------------------
 | Create The Application
 |--------------------------------------------------------------------------
 |
