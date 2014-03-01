@@ -122,4 +122,5 @@ foreach ($routes as $name => $r)
     echo $name . ": " . $r->getPath() . "<br/>";
     //echo print_r($r->getParameters(), true) . "<br/>";
 }
+die();
 */

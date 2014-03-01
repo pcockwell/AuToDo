@@ -73,10 +73,10 @@ class ScheduleCreationTest extends TestCase {
                         "recurrences" : "[0,2,4,6]"
                     }
                 ],
-                "prefs" : {
-                    "sched_start" : "2013-07-05 10:00:00",
+                "preferences" : {
                     "break" : "20"
-                }
+                },
+                "schedule_start" : "2013-07-05 10:00:00"
             }
         ', true );
 
@@ -221,14 +221,14 @@ class ScheduleCreationTest extends TestCase {
                         "recurrences" : "[0,2,4,6]"
                     }
                 ],
-                "prefs" : {
-                    "sched_start" : "2013-07-05 10:00:00",
+                "preferences" : {
                     "break" : "20"
-                }
+                },
+                "schedule_start" : "2013-07-05 10:00:00"
             }
         ';
 
-        $response = $this->call('POST', 'api/schedule', 
+        $response = $this->call('POST', 'api/schedule.json', 
             array(), array(), array('CONTENT_TYPE' => 'application/json'),
             $content);
 

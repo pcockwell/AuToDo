@@ -92,7 +92,6 @@ class ApiController extends BaseController
         {
             $prefs = $data['Preference'];
         }
-        //return Response::make(print_r($data, true), 200);
 
         if (isset($data['schedule_start']))
         {
@@ -115,9 +114,9 @@ class ApiController extends BaseController
         // populate variables with caller preferences
         if( !is_null( $sched_start ) )
         {
-            $schedule_start = new Carbon( $sched_start );
-            $this->schedule_start = $schedule_start->gt( Carbon::now() ) ?
-                                    $schedule_start : Carbon::now();
+            $this->schedule_start = new Carbon( $sched_start );
+            //$this->schedule_start = $schedule_start->gt( Carbon::now() ) ?
+            //                        $schedule_start : Carbon::now();
         }
         else
         {
