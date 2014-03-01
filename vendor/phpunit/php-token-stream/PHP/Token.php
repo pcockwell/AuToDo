@@ -376,9 +376,14 @@ class PHP_Token_FUNCTION extends PHP_TokenWithScopeAndVisibility
         }
 
         $this->arguments = array();
-        $i               = $this->id + 2;
         $tokens          = $this->tokenStream->tokens();
         $typeHint        = NULL;
+
+        // Search for first token inside brackets
+        $i = $this->id + 2;
+        while (!$tokens[$i-1] instanceof PHP_Token_OPEN_BRACKET) {
+            $i++;
+        }
 
         while (!$tokens[$i] instanceof PHP_Token_CLOSE_BRACKET) {
             if ($tokens[$i] instanceof PHP_Token_STRING) {
@@ -404,17 +409,22 @@ class PHP_Token_FUNCTION extends PHP_TokenWithScopeAndVisibility
 
         $tokens = $this->tokenStream->tokens();
 
-        if ($tokens[$this->id+2] instanceof PHP_Token_STRING) {
-            $this->name = (string)$tokens[$this->id+2];
-        }
+        for ($i = $this->id + 1; $i < count($tokens); $i++) {
+            if ($tokens[$i] instanceof PHP_Token_STRING) {
+                $this->name = (string)$tokens[$i];
+                break;
+            }
 
-        else if ($tokens[$this->id+2] instanceof PHP_Token_AMPERSAND &&
-                 $tokens[$this->id+3] instanceof PHP_Token_STRING) {
-            $this->name = (string)$tokens[$this->id+3];
-        }
+            else if ($tokens[$i] instanceof PHP_Token_AMPERSAND &&
+                     $tokens[$i+1] instanceof PHP_Token_STRING) {
+                $this->name = (string)$tokens[$i+1];
+                break;
+            }
 
-        else {
-            $this->name = 'anonymous function';
+            else if ($tokens[$i] instanceof PHP_Token_OPEN_BRACKET) {
+                $this->name = 'anonymous function';
+                break;
+            }
         }
 
         if ($this->name != 'anonymous function') {
@@ -482,11 +492,13 @@ class PHP_Token_FUNCTION extends PHP_TokenWithScopeAndVisibility
 
         $tokens = $this->tokenStream->tokens();
 
-        while (!$tokens[$i] instanceof PHP_Token_CLOSE_BRACKET) {
+        while (isset($tokens[$i]) &&
+               !$tokens[$i] instanceof PHP_Token_OPEN_CURLY &&
+               !$tokens[$i] instanceof PHP_Token_SEMICOLON) {
             $this->signature .= $tokens[$i++];
         }
 
-        $this->signature .= ')';
+        $this->signature = trim($this->signature);
 
         return $this->signature;
     }
@@ -494,8 +506,10 @@ class PHP_Token_FUNCTION extends PHP_TokenWithScopeAndVisibility
 
 class PHP_Token_CONST extends PHP_Token {}
 class PHP_Token_RETURN extends PHP_Token {}
+class PHP_Token_YIELD extends PHP_Token {}
 class PHP_Token_TRY extends PHP_Token {}
 class PHP_Token_CATCH extends PHP_Token {}
+class PHP_Token_FINALLY extends PHP_Token {}
 class PHP_Token_THROW extends PHP_Token {}
 class PHP_Token_USE extends PHP_Token {}
 class PHP_Token_GLOBAL extends PHP_Token {}
@@ -638,6 +652,7 @@ class PHP_Token_INTERFACE extends PHP_TokenWithScopeAndVisibility
 }
 
 class PHP_Token_CLASS extends PHP_Token_INTERFACE {}
+class PHP_Token_CLASS_NAME_CONSTANT extends PHP_Token {}
 class PHP_Token_TRAIT extends PHP_Token_INTERFACE {}
 class PHP_Token_EXTENDS extends PHP_Token {}
 class PHP_Token_IMPLEMENTS extends PHP_Token {}
