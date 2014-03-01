@@ -168,8 +168,15 @@ class ApiController extends BaseController
             }
             else
             {
-                $last_due_time = end( $this->schedule );
-                $last_due_time = $last_due_time[ 'end' ]->copy();
+                if (!empty($this->schedule))
+                {
+                    $last_due_time = end( $this->schedule );
+                    $last_due_time = $last_due_time[ 'end' ]->copy();
+                }
+                else
+                {
+                    $last_due_time = Carbon::now();
+                }
             }
             self::fillFixedEvents( $fixed_events, $last_due_time, true, false );
         }
