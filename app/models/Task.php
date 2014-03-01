@@ -37,8 +37,7 @@ class Task extends Eloquent
 
         if (count($attributes) > 0)
         {
-        self::$rules['priority'][] = 'between:0,'.self::TASK_MAX_PRIORITY;
-        self::$rules['due'][] = 'after:'.Carbon::now()->toDateTimeString();
+            self::$rules['priority'][] = 'between:0,'.self::TASK_MAX_PRIORITY;
 
             $validator = Validator::make($attributes, self::$rules);
             if ($validator->fails()){
