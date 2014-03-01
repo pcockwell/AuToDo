@@ -202,10 +202,8 @@ class SQLServerPlatform extends AbstractPlatform
                 $column['notnull'] = true;
             }
 
-            /**
-             * Build default constraints SQL statements
-             */
-            if ( ! empty($column['default']) || is_numeric($column['default'])) {
+            // Build default constraints SQL statements.
+            if (isset($column['default'])) {
                 $defaultConstraintsSql[] = 'ALTER TABLE ' . $tableName .
                     ' ADD' . $this->getDefaultConstraintDeclarationSQL($tableName, $column);
             }
@@ -276,7 +274,7 @@ class SQLServerPlatform extends AbstractPlatform
      */
     public function getDefaultConstraintDeclarationSQL($table, array $column)
     {
-        if (empty($column['default']) && ! is_numeric($column['default'])) {
+        if ( ! isset($column['default'])) {
             throw new \InvalidArgumentException("Incomplete column definition. 'default' required.");
         }
 
@@ -369,7 +367,7 @@ class SQLServerPlatform extends AbstractPlatform
             $columnDef = $column->toArray();
             $queryParts[] = 'ADD ' . $this->getColumnDeclarationSQL($column->getQuotedName($this), $columnDef);
 
-            if ( ! empty($columnDef['default']) || is_numeric($columnDef['default'])) {
+            if (isset($columnDef['default'])) {
                 $columnDef['name'] = $column->getQuotedName($this);
                 $queryParts[] = 'ADD' . $this->getDefaultConstraintDeclarationSQL($diff->name, $columnDef);
             }
@@ -400,7 +398,7 @@ class SQLServerPlatform extends AbstractPlatform
              * if default value has changed and another
              * default constraint already exists for the column.
              */
-            if ($columnDefaultHasChanged && ( ! empty($fromColumnDefault) || is_numeric($fromColumnDefault))) {
+            if ($columnDefaultHasChanged && null !== $fromColumnDefault) {
                 $queryParts[] = 'DROP CONSTRAINT ' .
                     $this->generateDefaultConstraintName($diff->name, $columnDiff->oldColumnName);
             }
@@ -408,7 +406,7 @@ class SQLServerPlatform extends AbstractPlatform
             $queryParts[] = 'ALTER COLUMN ' .
                     $this->getColumnDeclarationSQL($column->getQuotedName($this), $columnDef);
 
-            if ($columnDefaultHasChanged && (! empty($columnDef['default']) || is_numeric($columnDef['default']))) {
+            if ($columnDefaultHasChanged && isset($columnDef['default'])) {
                 $columnDef['name'] = $column->getQuotedName($this);
                 $queryParts[] = 'ADD' . $this->getDefaultConstraintDeclarationSQL($diff->name, $columnDef);
             }
@@ -427,7 +425,7 @@ class SQLServerPlatform extends AbstractPlatform
              * Drop existing default constraint for the old column name
              * if column has default value.
              */
-            if ( ! empty($columnDef['default']) || is_numeric($columnDef['default'])) {
+            if (isset($columnDef['default'])) {
                 $queryParts[] = 'DROP CONSTRAINT ' .
                     $this->generateDefaultConstraintName($diff->name, $oldColumnName);
             }
@@ -438,7 +436,7 @@ class SQLServerPlatform extends AbstractPlatform
             /**
              * Readd default constraint for the new column name.
              */
-            if ( ! empty($columnDef['default']) || is_numeric($columnDef['default'])) {
+            if (isset($columnDef['default'])) {
                 $columnDef['name'] = $column->getQuotedName($this);
                 $queryParts[] = 'ADD' . $this->getDefaultConstraintDeclarationSQL($diff->name, $columnDef);
             }
@@ -811,9 +809,17 @@ class SQLServerPlatform extends AbstractPlatform
         $query   = preg_replace('/\s+ORDER\s+BY\s+([^\)]*)/', '', $query); //Remove ORDER BY from $query
         $format  = 'SELECT * FROM (%s) AS doctrine_tbl WHERE doctrine_rownum BETWEEN %d AND %d';
 
+        // Pattern to match "main" SELECT ... FROM clause (including nested parentheses in select list).
+        $selectFromPattern = '/^(\s*SELECT\s+(?:\((?>[^()]+)|(?:R)*\)|[^(])+)\sFROM\s/i';
+
         if ( ! $orderBy) {
-            //Replace only first occurrence of FROM with OVER to prevent changing FROM also in subqueries.
-            $query = preg_replace('/\sFROM\s/i', ', ROW_NUMBER() OVER (ORDER BY (SELECT 0)) AS doctrine_rownum FROM ', $query, 1);
+            //Replace only "main" FROM with OVER to prevent changing FROM also in subqueries.
+            $query = preg_replace(
+                $selectFromPattern,
+                '$1, ROW_NUMBER() OVER (ORDER BY (SELECT 0)) AS doctrine_rownum FROM ',
+                $query,
+                1
+            );
 
             return sprintf($format, $query, $start, $end);
         }
@@ -855,7 +861,7 @@ class SQLServerPlatform extends AbstractPlatform
 
         //Replace only first occurrence of FROM with $over to prevent changing FROM also in subqueries.
         $over  = 'ORDER BY ' . implode(', ', $overColumns);
-        $query = preg_replace('/\sFROM\s/i', ", ROW_NUMBER() OVER ($over) AS doctrine_rownum FROM ", $query, 1);
+        $query = preg_replace($selectFromPattern, "$1, ROW_NUMBER() OVER ($over) AS doctrine_rownum FROM ", $query, 1);
 
         return sprintf($format, $query, $start, $end);
     }

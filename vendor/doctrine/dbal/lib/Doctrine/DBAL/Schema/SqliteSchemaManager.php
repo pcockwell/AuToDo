@@ -220,7 +220,7 @@ class SqliteSchemaManager extends AbstractSchemaManager
         $autoincrementColumn = null;
         $autoincrementCount = 0;
         foreach ($tableColumns as $tableColumn) {
-            if ('1' == $tableColumn['pk']) {
+            if ('0' != $tableColumn['pk']) {
                 $autoincrementCount++;
                 if (null === $autoincrementColumn && 'integer' == strtolower($tableColumn['type'])) {
                     $autoincrementColumn = $tableColumn['name'];
@@ -244,16 +244,22 @@ class SqliteSchemaManager extends AbstractSchemaManager
      */
     protected function _getPortableTableColumnDefinition($tableColumn)
     {
-        $e = explode('(', $tableColumn['type']);
-        $tableColumn['type'] = $e[0];
-        if (isset($e[1])) {
-            $length = trim($e[1], ')');
+        $parts = explode('(', $tableColumn['type']);
+        $tableColumn['type'] = $parts[0];
+        if (isset($parts[1])) {
+            $length = trim($parts[1], ')');
             $tableColumn['length'] = $length;
         }
 
         $dbType = strtolower($tableColumn['type']);
         $length = isset($tableColumn['length']) ? $tableColumn['length'] : null;
-        $unsigned = (boolean) isset($tableColumn['unsigned']) ? $tableColumn['unsigned'] : false;
+        $unsigned = false;
+
+        if (strpos($dbType, ' unsigned') !== false) {
+            $dbType = str_replace(' unsigned', '', $dbType);
+            $unsigned = true;
+        }
+
         $fixed = false;
         $type = $this->_platform->getDoctrineTypeMapping($dbType);
         $default = $tableColumn['dflt_value'];
