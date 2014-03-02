@@ -1,31 +1,8 @@
 <?php
 
-class PreferencesControllers extends \BaseController {
+use Autodo\Exception\ValidationException;
 
-	/**
-	 * Display the specified resource.
-	 *
-	 * @param  int  $id
-	 * @return Response
-	 */
-	public function index($user_id)
-	{
-        $user = User::find($user_id);
-        $preferences = $user->preferences;
-
-        if (!isset($user) || $fixed_event == false)
-        {
-            return Response::make( 'No user with id '.$user_id, 400 );
-        }
-        else if (!$preferences)
-        {
-            return Response::make( 'User does not have any preferences set', 400 );
-        }
-        else   
-        {
-            return Response::make( $preferences, 200 );
-        }
-	}
+class PreferencesController extends \BaseController {
 
 	/**
 	 * Store a newly created resource in storage.
@@ -54,15 +31,63 @@ class PreferencesControllers extends \BaseController {
         }
 	}
 
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function show($id)
+    {
+        $user = User::find($user_id);
+
+        if (!isset($user) || $user == false)
+        {
+            return Response::make( 'No user with id '.$user_id, 400 );
+        }
+        
+        $preferences = $user->preferences;
+        if (!isset($preferences) || $preferences == false)
+        {
+            return Response::make( 'User does not have any preferences set', 400 );
+        }
+        else   
+        {
+            return Response::make( $preferences, 200 );
+        }
+    }
+
 	/**
 	 * Update the specified resource in storage.
 	 *
 	 * @param  int  $id
 	 * @return Response
 	 */
-	public function update($user_id, $preference_id)
+	public function update($user_id)
 	{
-		//
+        $user = User::find($user_id);
+
+        if (!isset($user) || $user == false)
+        {
+            return Response::make( 'No user with id '.$user_id, 400 );
+        }
+        
+        $preferences = $user->preferences;
+        if (!isset($preferences) || $preferences == false)
+        {
+            return Response::make( 'User does not have any preferences set', 400 );
+        }
+
+        $newPrefs = Input::all();
+
+        if (!Preference::valid($newPrefs))
+        {
+            return Response::make( 'Preferences supplied are not valid.', 400 );
+        }
+
+        $preferences->update($newPrefs);
+            
+        return Response::make( $preferences, 201 );
 	}
 
 	/**
@@ -71,13 +96,20 @@ class PreferencesControllers extends \BaseController {
 	 * @param  int  $id
 	 * @return Response
 	 */
-	public function destroy($user_id, $preference_id)
+	public function destroy($user_id)
 	{
-        $preferences = Preference::find($preference_id);
+        $user = User::find($user_id);
+
+        if (!isset($user) || $user == false)
+        {
+            return Response::make( 'No user with id '.$user_id, 400 );
+        }
+        
+        $preferences = $user->preferences;
 
         if (!isset($preferences) || $preferences == false)
         {
-            return Response::make( 'No preference set with id '.$preference_id, 400 );
+            return Response::make( 'No preference set with for user '.$user_id, 400 );
         }
         else if ($preferences->user->id != $user_id)
         {

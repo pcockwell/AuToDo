@@ -104,7 +104,7 @@ Route::group(array('prefix' => 'api'), function()
     // Controller to handle user accounts.
     Route::resource('user.fixedevent', 'FixedEventController', array('except' => array('create', 'edit')));
     // Controller to handle user accounts.
-    Route::resource('user.preferences', 'PreferencesController', array('except' => array('show', 'create', 'edit')));
+    Route::resource('preferences', 'PreferencesController', array('except' => array('index', 'create', 'edit')));
 
     //Must always be the last entry in the file
     Route::controller('/', 'ApiController');
@@ -122,4 +122,5 @@ foreach ($routes as $name => $r)
     echo $name . ": " . $r->getPath() . "<br/>";
     //echo print_r($r->getParameters(), true) . "<br/>";
 }
+die();
 */

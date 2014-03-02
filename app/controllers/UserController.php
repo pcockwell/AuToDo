@@ -65,20 +65,14 @@ class UserController extends \BaseController {
             return Response::make( 'No user with id '.$id, 400 );
         }
 
-        $changeMade = false;
-        foreach (Input::all() as $key => $value)
+        $newUserInfo = Input::all();
+
+        if (!User::valid($newUserInfo))
         {
-            if (property_exists($user, $key) && $user->{$key} != $value)
-            {
-                $user->{$key} = $value;
-                $changeMade = true;
-            }
+            return Response::make( 'Input supplied is valid.', 400 );
         }
 
-        if ($changeMade)
-        {
-            $user->save();
-        }
+        $user->update($newUserInfo);
             
         return Response::make( $user, 201 );
     }

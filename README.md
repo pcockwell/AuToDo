@@ -51,21 +51,56 @@ If the `CONTENT-TYPE` header is set, but the `ACCEPT` header is not, the AuToDo 
 
 ### API Scheduling Calls
 
-| Method            | HTTP Request                  | Description                                                                           |
-| ----------------- | ----------------------------- | ------------------------------------------------------------------------------------- |
-| Generate Schedule | POST     /schedule            | Include a data object as described [here](#schedule_data_structure).                  |
-| Generate Schedule | GET      /user/{id}/schedule  | Returns schedule generated from saved user information for user with specified 'id'.  |
+| Method            | HTTP Request Type | URL                   | Description                                                                           |
+| ----------------- | ----------------- | --------------------- | ------------------------------------------------------------------------------------- |
+| Generate Schedule | POST              | /schedule             | Include a data object as described [here](#schedule_data_structure).                  |
+| Generate Schedule | GET               | /user/{id}/schedule   | Returns schedule generated from saved user information for user with specified 'id'.  |
 
 ### Users
 
-The 'id' parameter is a numeric value, unique to each user.
+The 'user_id' parameter is a numeric value, unique to each user.
 
-| Method    | HTTP Request          | Description                                                                                   |
-| --------- | --------------------- | --------------------------------------------------------------------------------------------- |
-| Create    | POST     /user        | Include a data object with the 'name' and 'email' parameters. Returns created user.           |
-| Get       | GET      /user/{id}   | Returns user with specified 'id'.                                                             |
-| Update    | PUT      /user/{id}   | Include a data object with the 'name' and/or 'email' parameters. Returns the updated user.    |
-| Delete    | DELETE   /user/{id}   | Deletes the specified user.                                                                   |
+| Method    | HTTP Request Type | URL               | Description                                                                                   |
+| --------- | ----------------- | ----------------- | --------------------------------------------------------------------------------------------- |
+| Create    | POST              | /user             | Include a data object with the 'name' and 'email' parameters. Returns created user.           |
+| Get       | GET               | /user/{user_id}   | Returns user with specified 'user_id'.                                                        |
+| Update    | PUT               | /user/{user_id}   | Include a data object with the 'name' and/or 'email' parameters. Returns the updated user.    |
+| Delete    | DELETE            | /user/{user_id}   | Deletes the specified user.                                                                   |
+
+### Tasks
+
+The 'task_id' parameter is a numeric value, unique to each task. The 'user_id' parameter is a numeric value, unique to each user. Where both `task_id` and `user_id` are required, if the task with identifier `task_id` does not have a matching `user_id`, it will not be returned.
+
+| Method    | HTTP Request Type | URL                               | Description                                                                                   |
+| --------- | ----------------- | --------------------------------- | --------------------------------------------------------------------------------------------- |
+| Create    | POST              | /user/{user_id}/task              | Include a data object as described [here](#task_structure). Returns created task.             |
+| List      | GET               | /user/{user_id}/task              | Returns all tasks associated with the specified user.                                         |
+| Get       | GET               | /user/{user_id}/task/{task_id}    | Returns task with specified 'task_id' and 'user_id'.                                          |
+| Update    | PUT               | /user/{user_id}/task/{task_id}    | Include a data object as described [here](#task_structure). Returns the updated task.         |
+| Delete    | DELETE            | /user/{user_id}/task/{task_id}    | Deletes the specified task.                                                                   |
+
+### Fixed Events
+
+The 'event_id' parameter is a numeric value, unique to each task. The 'user_id' parameter is a numeric value, unique to each user. Where both `event_id` and `user_id` are required, if the task with identifier `event_id` does not have a matching `user_id`, it will not be returned.
+
+| Method    | HTTP Request Type | URL                                   | Description                                                                                   |
+| --------- | ----------------- | ------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Create    | POST              | /user/{user_id}/fixedevent            | Include a data object as described [here](#event_structure). Returns created event.           |
+| List      | GET               | /user/{user_id}/fixedevent            | Returns all events associated with the specified user.                                        |
+| Get       | GET               | /user/{user_id}/fixedevent/{event_id} | Returns event with specified 'event_id' and 'user_id'.                                        |
+| Update    | PUT               | /user/{user_id}/fixedevent/{event_id} | Include a data object as described [here](#event_structure). Returns the updated event.       |
+| Delete    | DELETE            | /user/{user_id}/fixedevent/{event_id} | Deletes the specified event.                                                                  |
+
+### Preferences
+
+The 'user_id' parameter is a numeric value, unique to each user.
+
+| Method    | HTTP Request Type | URL                       | Description                                                                                   |
+| --------- | ----------------- | ------------------------- | --------------------------------------------------------------------------------------------- |
+| Create    | POST              | /preferences              | Include a data object as described [here](#prefs_structure). Returns created preferences.     |
+| Get       | GET               | /preferences/{user_id}    | Returns preferences associated with specified user.                                           |
+| Update    | PUT               | /preferences/{user_id}    | Include a data object as described [here](#prefs_structure). Returns the updated preferences. |
+| Delete    | DELETE            | /preferences/{user_id}    | Deletes the specified event.                                                                  |
 
 Data Object Structures
 ----------------------
@@ -80,7 +115,7 @@ Data Object Structures
 | created_at        | Timestamp             | No                | No                | Date and time when the user was created in the database.      |
 | updated_at        | Timestamp             | No                | No                | Date and time when the user was last updated in the database. |
 
-### Task
+### <a id='task_structure'></a>Task
 
 | Attribute Name    | Formatting            | Can Be Modified   | Required On Input     | Description                                                               |
 | ----------------- | --------------------- | ------------------| --------------------- | ------------------------------------------------------------------------- |
@@ -94,7 +129,7 @@ Data Object Structures
 | created_at        | Timestamp             | No                | No                    | Date and time when the task was created in the database.                  |
 | updated_at        | Timestamp             | No                | No                    | Date and time when the task was last updated in the database.             |
 
-### Fixed Event
+### <a id='event_structure'></a>Fixed Event
 
 | Attribute Name    | Formatting                | Can Be Modified   | Required On Input     | Description                                                               |
 | ----------------- | ------------------------- | ------------------| --------------------- | ------------------------------------------------------------------------- |
@@ -109,7 +144,7 @@ Data Object Structures
 | created_at        | Timestamp                 | No                | No                    | Date and time when the event was created in the database.                 |
 | updated_at        | Timestamp                 | No                | No                    | Date and time when the event was last updated in the database.            |
 
-### Preferences
+### <a id='prefs_structure'></a>Preferences
 
 | Attribute Name    | Formatting            | Can Be Modified   | Required On Input     | Description                                                               |
 | ----------------- | --------------------- | ------------------| --------------------- | ------------------------------------------------------------------------- |
@@ -158,6 +193,8 @@ The `schedule_start` field is a date time value indicating when to begin the sch
 ```
 
 #### Sample XML Input
+
+The name of the root node, in this case `document`, does not matter.
 
 ```
 <?xml version="1.0" encoding="UTF-8" ?>
