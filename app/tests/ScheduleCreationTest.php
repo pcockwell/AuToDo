@@ -97,7 +97,7 @@ class ScheduleCreationTest extends TestCase {
             }
         ', true );
     
-        $new_input = InputConverter::convertToObject(Input::all());
+        $new_input = InputConverter::convertToObject($data);
 
         $tasks = array();
         $fixed_events = array();
