@@ -1,5 +1,6 @@
 <?php
 use Carbon\Carbon;
+use Autodo\Support\InputConverter;
 
 class ScheduleCreationTest extends TestCase {
 
