@@ -98,6 +98,7 @@ class ScheduleCreationTest extends TestCase {
         ', true );
     
         $new_input = InputConverter::convertToObject($data);
+        print_r($new_input);
 
         $tasks = array();
         $fixed_events = array();
@@ -256,6 +257,10 @@ class ScheduleCreationTest extends TestCase {
         //Make sure to fix the key orderings for #5 and #4 when we fix the display ordering
         $correct_tasks = 0;
         foreach( $json_response as $key => $timeslot ) {
+
+            $timeslot["start"] = new Carbon($timeslot["start"]["date"], $timeslot["start"]["timezone"]);
+            $timeslot["end"] = new Carbon($timeslot["end"]["date"], $timeslot["end"]["timezone"]);
+
             if( $key == 0 ) {
                 $this->assertTrue($timeslot['start']->eq(new Carbon('2013-07-05 00:00:00')));
                 $this->assertTrue($timeslot['end']->eq(new Carbon('2013-07-05 07:00:00')));
@@ -314,6 +319,10 @@ class ScheduleCreationTest extends TestCase {
         //Make sure to fix the key orderings for #5 and #4 when we fix the display ordering
         $correct_tasks = 0;
         foreach( $xml_response as $key => $timeslot ) {
+
+            $timeslot["start"] = new Carbon($timeslot["start"]["date"], $timeslot["start"]["timezone"]);
+            $timeslot["end"] = new Carbon($timeslot["end"]["date"], $timeslot["end"]["timezone"]);
+
             if( $key == 0 ) {
                 $this->assertTrue($timeslot['start']->eq(new Carbon('2013-07-05 00:00:00')));
                 $this->assertTrue($timeslot['end']->eq(new Carbon('2013-07-05 07:00:00')));
@@ -439,6 +448,10 @@ class ScheduleCreationTest extends TestCase {
         //Make sure to fix the key orderings for #5 and #4 when we fix the display ordering
         $correct_tasks = 0;
         foreach( $xml_response as $key => $timeslot ) {
+
+            $timeslot["start"] = new Carbon($timeslot["start"]["date"], $timeslot["start"]["timezone"]);
+            $timeslot["end"] = new Carbon($timeslot["end"]["date"], $timeslot["end"]["timezone"]);
+
             if( $key == 0 ) {
                 $this->assertTrue($timeslot['start']->eq(new Carbon('2013-07-05 00:00:00')));
                 $this->assertTrue($timeslot['end']->eq(new Carbon('2013-07-05 07:00:00')));
@@ -497,6 +510,10 @@ class ScheduleCreationTest extends TestCase {
         //Make sure to fix the key orderings for #5 and #4 when we fix the display ordering
         $correct_tasks = 0;
         foreach( $json_response as $key => $timeslot ) {
+
+            $timeslot["start"] = new Carbon($timeslot["start"]["date"], $timeslot["start"]["timezone"]);
+            $timeslot["end"] = new Carbon($timeslot["end"]["date"], $timeslot["end"]["timezone"]);
+
             if( $key == 0 ) {
                 $this->assertTrue($timeslot['start']->eq(new Carbon('2013-07-05 00:00:00')));
                 $this->assertTrue($timeslot['end']->eq(new Carbon('2013-07-05 07:00:00')));
