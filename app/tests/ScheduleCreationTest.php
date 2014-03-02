@@ -106,7 +106,7 @@ class ScheduleCreationTest extends TestCase {
             $fixed_event_obj = FixedEvent::create($fixed);
             $fixed_events[ $fixed_event_obj->name ] = $fixed_event_obj;
         }
-        $prefs = $data[ "preferences" ];
+        $prefs = Preference::create($data[ "preferences" ]);
 
         // Create an ApiController
         $api_controller = App::make('ApiController');
