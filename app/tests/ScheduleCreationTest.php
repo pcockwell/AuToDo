@@ -95,18 +95,18 @@ class ScheduleCreationTest extends TestCase {
                 "schedule_start" : "2013-07-05 10:00:00"
             }
         ', true );
+    
+        $new_input = InputConverter::convertToObject(Input::all());
 
         $tasks = array();
         $fixed_events = array();
-        foreach( $data[ "tasks" ] as $task ) {
-            $task_obj = Task::create($task);
-            $tasks[ $task_obj->name ] = $task_obj;
+        foreach( $new_input[ "Task" ] as $task ) {
+            $tasks[ $task->name ] = $task;
         }
-        foreach( $data[ "fixed" ] as $fixed ) {
-            $fixed_event_obj = FixedEvent::create($fixed);
-            $fixed_events[ $fixed_event_obj->name ] = $fixed_event_obj;
+        foreach( $new_input[ "FixedEvent" ] as $fixed ) {
+            $fixed_events[ $fixed->name ] = $fixed;
         }
-        $prefs = Preference::create($data[ "preferences" ]);
+        $prefs = $new_input[ "Preference" ];
 
         // Create an ApiController
         $api_controller = App::make('ApiController');
