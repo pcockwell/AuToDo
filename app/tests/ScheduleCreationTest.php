@@ -3,6 +3,22 @@ use Carbon\Carbon;
 
 class ScheduleCreationTest extends TestCase {
 
+    protected   $useDatabase    = true;
+    private     $testUserId     = 1;
+
+    public function setUp()
+    {
+        parent::setUp();
+
+        Carbon::setTestNow(Carbon::createFromDate(2010, 1, 1));
+    }
+
+    public function tearDown()
+    {
+        Carbon::setTestNow();
+    }
+
+
     /**
      * Perform a basic scheduling test.
      *
