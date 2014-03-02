@@ -58,7 +58,29 @@ class UserController extends \BaseController {
      */
     public function update($id)
     {
-        //
+        $user = User::find($id);
+
+        if (!isset($user) || $user == false)
+        {
+            return Response::make( 'No user with id '.$id, 400 );
+        }
+
+        $changeMade = false;
+        foreach (Input::all() as $key => $value)
+        {
+            if (property_exists($user, $key) && $user->{$key} != $value)
+            {
+                $user->{$key} = $value;
+                $changeMade = true;
+            }
+        }
+
+        if ($changeMade)
+        {
+            $user->save();
+        }
+            
+        return Response::make( $user, 201 );
     }
 
     /**
