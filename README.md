@@ -51,56 +51,56 @@ If the `CONTENT-TYPE` header is set, but the `ACCEPT` header is not, the AuToDo 
 
 ### API Scheduling Calls
 
-| Method            | HTTP Request Type | URL                   | Description                                                                           |
-| ----------------- | ----------------- | --------------------- | ------------------------------------------------------------------------------------- |
-| Generate Schedule | POST              | /schedule             | Include a data object as described [here](#schedule_data_structure).                  |
-| Generate Schedule | GET               | /user/{id}/schedule   | Returns schedule generated from saved user information for user with specified 'id'.  |
+| Method            | Request Type  | URL                       | Description                                                                               |
+| ----------------- | ------------- | ------------------------- | ----------------------------------------------------------------------------------------- |
+| Generate Schedule | POST          | /schedule                 | Include a data object as described [here](#schedule_data_structure).                      |
+| Generate Schedule | GET           | /user/{user_id}/schedule  | Returns schedule generated from saved user information for user with specified `user_id`. |
 
 ### Users
 
-The 'user_id' parameter is a numeric value, unique to each user.
+The `user_id` parameter is a numeric value, unique to each user.
 
-| Method    | HTTP Request Type | URL               | Description                                                                                   |
-| --------- | ----------------- | ----------------- | --------------------------------------------------------------------------------------------- |
-| Create    | POST              | /user             | Include a data object with the 'name' and 'email' parameters. Returns created user.           |
-| Get       | GET               | /user/{user_id}   | Returns user with specified 'user_id'.                                                        |
-| Update    | PUT               | /user/{user_id}   | Include a data object with the 'name' and/or 'email' parameters. Returns the updated user.    |
-| Delete    | DELETE            | /user/{user_id}   | Deletes the specified user.                                                                   |
+| Method    | Request Type  | URL               | Description                                                                                   |
+| --------- | ------------- | ----------------- | --------------------------------------------------------------------------------------------- |
+| Create    | POST          | /user             | Include a data object with the `name` and `email` parameters. Returns created user.           |
+| Get       | GET           | /user/{user_id}   | Returns user with specified `user_id`.                                                        |
+| Update    | PUT           | /user/{user_id}   | Include a data object with the `name` and/or `email` parameters. Returns the updated user.    |
+| Delete    | DELETE        | /user/{user_id}   | Deletes the specified user.                                                                   |
 
 ### Tasks
 
-The 'task_id' parameter is a numeric value, unique to each task. The 'user_id' parameter is a numeric value, unique to each user. Where both `task_id` and `user_id` are required, if the task with identifier `task_id` does not have a matching `user_id`, it will not be returned.
+The `task_id` parameter is a numeric value, unique to each task. The `user_id` parameter is a numeric value, unique to each user. Where both `task_id` and `user_id` are required, if the task with identifier `task_id` does not have a matching `user_id`, it will not be returned.
 
-| Method    | HTTP Request Type | URL                               | Description                                                                                   |
-| --------- | ----------------- | --------------------------------- | --------------------------------------------------------------------------------------------- |
-| Create    | POST              | /user/{user_id}/task              | Include a data object as described [here](#task_structure). Returns created task.             |
-| List      | GET               | /user/{user_id}/task              | Returns all tasks associated with the specified user.                                         |
-| Get       | GET               | /user/{user_id}/task/{task_id}    | Returns task with specified 'task_id' and 'user_id'.                                          |
-| Update    | PUT               | /user/{user_id}/task/{task_id}    | Include a data object as described [here](#task_structure). Returns the updated task.         |
-| Delete    | DELETE            | /user/{user_id}/task/{task_id}    | Deletes the specified task.                                                                   |
+| Method    | Request Type  | URL                               | Description                                                                                   |
+| --------- | ------------- | --------------------------------- | --------------------------------------------------------------------------------------------- |
+| Create    | POST          | /user/{user_id}/task              | Include a data object as described [here](#task_structure). Returns created task.             |
+| List      | GET           | /user/{user_id}/task              | Returns all tasks associated with the specified user.                                         |
+| Get       | GET           | /user/{user_id}/task/{task_id}    | Returns task with specified `task_id` and `user_id`.                                          |
+| Update    | PUT           | /user/{user_id}/task/{task_id}    | Include a data object as described [here](#task_structure). Returns the updated task.         |
+| Delete    | DELETE        | /user/{user_id}/task/{task_id}    | Deletes the specified task.                                                                   |
 
 ### Fixed Events
 
-The 'event_id' parameter is a numeric value, unique to each task. The 'user_id' parameter is a numeric value, unique to each user. Where both `event_id` and `user_id` are required, if the task with identifier `event_id` does not have a matching `user_id`, it will not be returned.
+The `event_id` parameter is a numeric value, unique to each task. The `user_id` parameter is a numeric value, unique to each user. Where both `event_id` and `user_id` are required, if the task with identifier `event_id` does not have a matching `user_id`, it will not be returned.
 
-| Method    | HTTP Request Type | URL                                   | Description                                                                                   |
-| --------- | ----------------- | ------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Create    | POST              | /user/{user_id}/fixedevent            | Include a data object as described [here](#event_structure). Returns created event.           |
-| List      | GET               | /user/{user_id}/fixedevent            | Returns all events associated with the specified user.                                        |
-| Get       | GET               | /user/{user_id}/fixedevent/{event_id} | Returns event with specified 'event_id' and 'user_id'.                                        |
-| Update    | PUT               | /user/{user_id}/fixedevent/{event_id} | Include a data object as described [here](#event_structure). Returns the updated event.       |
-| Delete    | DELETE            | /user/{user_id}/fixedevent/{event_id} | Deletes the specified event.                                                                  |
+| Method    | Request Type  | URL                                   | Description                                                                                   |
+| --------- | ------------- | ------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Create    | POST          | /user/{user_id}/fixedevent            | Include a data object as described [here](#event_structure). Returns created event.           |
+| List      | GET           | /user/{user_id}/fixedevent            | Returns all events associated with the specified user.                                        |
+| Get       | GET           | /user/{user_id}/fixedevent/{event_id} | Returns event with specified `event_id` and `user_id`.                                        |
+| Update    | PUT           | /user/{user_id}/fixedevent/{event_id} | Include a data object as described [here](#event_structure). Returns the updated event.       |
+| Delete    | DELETE        | /user/{user_id}/fixedevent/{event_id} | Deletes the specified event.                                                                  |
 
 ### Preferences
 
-The 'user_id' parameter is a numeric value, unique to each user.
+The `user_id` parameter is a numeric value, unique to each user.
 
-| Method    | HTTP Request Type | URL                       | Description                                                                                   |
-| --------- | ----------------- | ------------------------- | --------------------------------------------------------------------------------------------- |
-| Create    | POST              | /preferences              | Include a data object as described [here](#prefs_structure). Returns created preferences.     |
-| Get       | GET               | /preferences/{user_id}    | Returns preferences associated with specified user.                                           |
-| Update    | PUT               | /preferences/{user_id}    | Include a data object as described [here](#prefs_structure). Returns the updated preferences. |
-| Delete    | DELETE            | /preferences/{user_id}    | Deletes the specified event.                                                                  |
+| Method    | Request Type  | URL                       | Description                                                                                   |
+| --------- | ------------- | ------------------------- | --------------------------------------------------------------------------------------------- |
+| Create    | POST          | /preferences              | Include a data object as described [here](#prefs_structure). Returns created preferences.     |
+| Get       | GET           | /preferences/{user_id}    | Returns preferences associated with specified user.                                           |
+| Update    | PUT           | /preferences/{user_id}    | Include a data object as described [here](#prefs_structure). Returns the updated preferences. |
+| Delete    | DELETE        | /preferences/{user_id}    | Deletes the specified event.                                                                  |
 
 Data Object Structures
 ----------------------
