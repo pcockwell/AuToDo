@@ -61,7 +61,7 @@ class ScheduleCreationTest extends TestCase {
                         "priority" : 1
                     }
                 ],
-                "fixed" : [
+                "fixedevents" : [
                     {
                         "user_id" : 1,
                         "name" : "Sleep",
@@ -98,7 +98,6 @@ class ScheduleCreationTest extends TestCase {
         ', true );
     
         $new_input = InputConverter::convertToObject($data);
-        print_r($new_input);
 
         $tasks = array();
         $fixed_events = array();
@@ -210,7 +209,7 @@ class ScheduleCreationTest extends TestCase {
                         "priority" : 1
                     }
                 ],
-                "fixed" : [
+                "fixedevents" : [
                     {
                         "user_id" : 1,
                         "name" : "Sleep",
