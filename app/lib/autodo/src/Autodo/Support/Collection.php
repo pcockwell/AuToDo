@@ -1,7 +1,7 @@
 <?php namespace Autodo\Support;
 
-use Illuminate\Support\Contracts\XmlableInterface;
 use Illuminate\Support\Collection as BaseCollection;
+use Autodo\Contracts\XmlableInterface;
 use Autodo\Support\XmlWriter;
 
 class Collection extends BaseCollection implements XmlableInterface {

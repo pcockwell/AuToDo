@@ -1,7 +1,7 @@
 <?php namespace Autodo\Database\Eloquent;
 
-use Illuminate\Support\Contracts\XmlableInterface;
 use Illuminate\Database\Eloquent\Model as BaseModel;
+use Autodo\Contracts\XmlableInterface;
 use Autodo\Support\XmlWriter;
 
 abstract class Model extends BaseModel implements XmlableInterface {

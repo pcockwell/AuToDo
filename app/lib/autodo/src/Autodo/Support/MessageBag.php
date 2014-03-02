@@ -1,7 +1,7 @@
 <?php namespace Autodo\Support;
 
-use Illuminate\Support\Contracts\XmlableInterface;
 use Illuminate\Support\MessageBag as BaseMessageBag;
+use Autodo\Contracts\XmlableInterface;
 use Autodo\Support\XmlWriter;
 
 class MessageBag extends BaseMessageBag implements XmlableInterface {

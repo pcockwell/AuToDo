@@ -1,7 +1,7 @@
 <?php namespace Autodo\Pagination;
 
-use Illuminate\Support\Contracts\XmlableInterface;
 use Illuminate\Pagination\Paginator as BasePaginator;
+use Autodo\Contracts\XmlableInterface;
 use Autodo\Support\XmlWriter;
 
 class Paginator extends BasePaginator implements XmlableInterface {

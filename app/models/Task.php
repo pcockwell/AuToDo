@@ -47,6 +47,22 @@ class Task extends Eloquent
         parent::__construct($attributes, $exists);
     }
 
+    public static function valid($attributes = array(), $checkRequired = false)
+    {
+        $newRules = self::$rules;
+
+        if (!$checkRequired)
+        {
+            foreach ($newRules as $rule)
+            {
+                $rule = array_diff($rule, array('required'));
+            }
+        }
+
+        $validator = Validator::make($attributes, $newRules);
+        return $validator->fails() == false;
+    }
+
     public function user()
     {
         $this->belongsTo('User');

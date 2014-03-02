@@ -16,11 +16,6 @@ class ApiController extends BaseController
     private $schedule_start;
     private $task_break;
 
-    public function getIndex()
-    {
-        return View::make('hello');
-    }
-
     public function missingMethod($parameters)
     {
         return "ApiController@missingMethod";
@@ -260,62 +255,87 @@ class ApiController extends BaseController
 
         // Schedule each recurrence of this event
         $event_recurrences = $event->getRecurrences();
-        foreach( $event_recurrences as $day_of_week )
-        {
-            $current_date = $event_start_date->copy();
 
-            $diff = $day_of_week - $current_date->dayOfWeek;
-            if( $diff < 0 )
+        if (!empty($event_recurrences))
+        {
+            foreach( $event_recurrences as $day_of_week )
             {
-                $diff += self::DAYS_IN_WEEK;
+                $current_date = $event_start_date->copy();
+
+                $diff = $day_of_week - $current_date->dayOfWeek;
+                if( $diff < 0 )
+                {
+                    $diff += self::DAYS_IN_WEEK;
+                }
+
+                $current_date->addDays( $diff );
+
+                while( $current_date->lte( $event_end_date ) )
+                {
+
+    //                 $empty_slot_id = self::findFixedSlot(
+    //                     $current_date->copy()->addMinutes( $event->start_time ),
+    //                     $current_date->copy()->addMinutes( $event->end_time ) );
+
+    //                 if( is_null($empty_slot_id) )
+    //                 {
+    //                     return false;
+    //                 }
+
+                    // Add event to schedule
+                    if( $fill_schedule )
+                    {
+                        $current_event_start = $current_date->copy()->addMinutes( $event->start_time );
+                        $current_event_end = $current_date->copy()->addMinutes( $event->end_time );
+                        self::insertSchedule(
+                            $current_event_start,
+                            $current_event_end,
+                            $event );
+                    }
+
+                    // Update empty time slots
+                    if( $fill_slots )
+                    {
+                        self::markFixedSlots(
+                            $current_date->copy()->addMinutes( $event->start_time ),
+                            $current_date->copy()->addMinutes( $event->end_time ) );
+                    }
+
+    //     This part commented out just in case we ever want to do conflict checking for
+    //     fixed events.
+    //                 $time_slot = $this->empty_slots[ $empty_slot_id ];
+    //                 array_splice( $this->empty_slots, $empty_slot_id, 1, array(
+    //                         array( 'start' => $time_slot[ 'start' ]->copy(),
+    //                                'end' => $current_event_start->copy() ),
+    //                         array( 'start' => $current_event_end->copy(),
+    //                                'end' => is_null($time_slot[ 'end' ]) ?
+    //                                         null : $time_slot[ 'end' ]->copy() )
+    //                     )
+    //                 );
+
+                    $current_date->addDays( self::DAYS_IN_WEEK );
+                }
+            }
+        }
+        else
+        {
+            // Add event to schedule
+            if( $fill_schedule )
+            {
+                $current_event_start = $event->start_date->copy()->addMinutes( $event->start_time );
+                $current_event_end = $event->end_date->copy()->addMinutes( $event->end_time );
+                self::insertSchedule(
+                    $current_event_start,
+                    $current_event_end,
+                    $event );
             }
 
-            $current_date->addDays( $diff );
-
-            while( $current_date->lte( $event_end_date ) )
+            // Update empty time slots
+            if( $fill_slots )
             {
-
-//                 $empty_slot_id = self::findFixedSlot(
-//                     $current_date->copy()->addMinutes( $event->start_time ),
-//                     $current_date->copy()->addMinutes( $event->end_time ) );
-
-//                 if( is_null($empty_slot_id) )
-//                 {
-//                     return false;
-//                 }
-
-                // Add event to schedule
-                if( $fill_schedule )
-                {
-                    $current_event_start = $current_date->copy()->addMinutes( $event->start_time );
-                    $current_event_end = $current_date->copy()->addMinutes( $event->end_time );
-                    self::insertSchedule(
-                        $current_event_start,
-                        $current_event_end,
-                        $event );
-                }
-
-                // Update empty time slots
-                if( $fill_slots )
-                {
-                    self::markFixedSlots(
-                        $current_date->copy()->addMinutes( $event->start_time ),
-                        $current_date->copy()->addMinutes( $event->end_time ) );
-                }
-
-//     This part commented out just in case we ever want to do conflict checking for
-//     fixed events.
-//                 $time_slot = $this->empty_slots[ $empty_slot_id ];
-//                 array_splice( $this->empty_slots, $empty_slot_id, 1, array(
-//                         array( 'start' => $time_slot[ 'start' ]->copy(),
-//                                'end' => $current_event_start->copy() ),
-//                         array( 'start' => $current_event_end->copy(),
-//                                'end' => is_null($time_slot[ 'end' ]) ?
-//                                         null : $time_slot[ 'end' ]->copy() )
-//                     )
-//                 );
-
-                $current_date->addDays( self::DAYS_IN_WEEK );
+                self::markFixedSlots(
+                    $current_date->copy()->addMinutes( $event->start_time ),
+                    $current_date->copy()->addMinutes( $event->end_time ) );
             }
         }
 

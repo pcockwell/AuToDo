@@ -88,9 +88,7 @@ Validator::extend('validate_recurrence', function($attribute, $value, $parameter
 
     if (null === $decoded_value = json_decode($value)) return false;
 
-    if (!is_array($decoded_value) || count($decoded_value) == 0) return false;
-
-    return true;
+    return is_array($decoded_value);
 });
 
 Validator::extend('alpha_space', function($attr, $value) {
