@@ -4,4 +4,4 @@ composer.lock
 .DS_Store
 /app/config/database.php
 *.swp
-*_errors.log
+*.log
