@@ -43,17 +43,17 @@ class Preference extends Eloquent
         }
         parent::__construct($attributes, $exists);
         
-        if (!property_exists($this, 'break'))
+        if (!array_key_exists('break', $attributes))
         {
             $this->break = self::DEFAULT_BREAK;
         }
 
-        if (!property_exists($this, 'show_fixed_events'))
+        if (!array_key_exists('show_fixed_events', $attributes))
         {
             $this->show_fixed_events = self::DEFAULT_SHOW_FIXED_EVENTS;
         }
 
-        if (!property_exists($this, 'schedule_until_latest'))
+        if (!array_key_exists('schedule_until_latest', $attributes))
         {
             $this->schedule_until_latest = self::DEFAULT_SCHEDULE_UNTIL_LATEST;
         }
