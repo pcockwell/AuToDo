@@ -82,7 +82,27 @@ class FixedEventController extends \BaseController {
 	 */
 	public function update($user_id, $fixedevent_id)
 	{
-		//
+        $fixed_event = FixedEvent::find($fixedevent_id);
+
+        if (!isset($fixed_event) || $fixed_event == false)
+        {
+            return Response::make( 'No fixed event with id '.$fixedevent_id, 400 );
+        }
+        else if ($fixed_event->user->id != $user_id)
+        {
+            return Response::make( 'Fixed event does not belong to specified user', 400 );
+        }
+
+        $newEventInfo = Input::all();
+
+        if (!Task::valid($newEventInfo))
+        {
+            return Response::make( 'Fixed event details supplied are not valid.', 400 );
+        }
+
+        $fixed_event->update($newEventInfo);
+            
+        return Response::make( $fixed_event, 201 );
 	}
 
 	/**

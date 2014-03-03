@@ -82,7 +82,27 @@ class TaskController extends \BaseController {
      */
     public function update($user_id, $task_id)
     {
-        //
+        $task = Task::find($task_id);
+
+        if (!isset($task) || $task == false)
+        {
+            return Response::make( 'No task with id '.$task_id, 400 );
+        }
+        else if ($task->user->id != $user_id)
+        {
+            return Response::make( 'Task does not belong to specified user', 400 );
+        }
+
+        $newTaskInfo = Input::all();
+
+        if (!Task::valid($newTaskInfo))
+        {
+            return Response::make( 'Task details supplied are not valid.', 400 );
+        }
+
+        $task->update($newTaskInfo);
+            
+        return Response::make( $task, 201 );
     }
 
     /**
