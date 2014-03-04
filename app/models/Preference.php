@@ -17,10 +17,9 @@ class Preference extends Eloquent
      */
     protected $table = 'preferences';
 
-    protected $fillable = array('break', 'show_fixed_events', 'schedule_until_latest');
+    protected $fillable = array('show_fixed_events', 'schedule_until_latest');
 
     protected static $rules = array(
-        'break' => array('integer', 'min:0'),
         'show_fixed_events' => array('boolean'),
         'schedule_until_latest' => array('boolean')
     );
@@ -43,11 +42,6 @@ class Preference extends Eloquent
         }
         parent::__construct($attributes, $exists);
         
-        if (!array_key_exists('break', $attributes))
-        {
-            $this->break = self::DEFAULT_BREAK;
-        }
-
         if (!array_key_exists('show_fixed_events', $attributes))
         {
             $this->show_fixed_events = self::DEFAULT_SHOW_FIXED_EVENTS;

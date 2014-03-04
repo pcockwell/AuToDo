@@ -15,7 +15,9 @@ class FixedEvent extends Eloquent
 	 */
 	protected $table = 'fixed_events';
 
-	protected $fillable = array('name', 'start_time', 'end_time', 'start_date', 'end_date', 'recurrences');
+	protected $fillable = array('name', 'start_time', 'end_time', 
+        'start_date', 'end_date', 'recurrences',
+        'break_before', 'break_after');
 
     protected static $rules = array(
         'name' => array('required', 'alpha_num_space', 'min:1'),
@@ -24,6 +26,8 @@ class FixedEvent extends Eloquent
         'start_date' => array('required', 'date'),
         'end_date' => array('required', 'date'),
         'recurrences' => array('validate_recurrence'),
+		'break_before' => array('integer', 'min:0'),
+		'break_after' => array('integer', 'min:0'),
     );
 
     /**

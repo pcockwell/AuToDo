@@ -15,7 +15,9 @@ class Task extends Eloquent
 	 */
 	protected $table = 'tasks';
 
-	protected $fillable = array('name', 'priority', 'due', 'duration', 'complete');
+	protected $fillable = array('name', 'priority', 'due', 
+        'duration', 'complete',
+        'break_before', 'break_after');
 
 	protected static $rules = array(
 		'name' => array('required', 'alpha_num_space', 'min:1'),
@@ -23,6 +25,8 @@ class Task extends Eloquent
 		'due' => array('required', 'date'),
 		'duration' => array('required', 'integer', 'min:1'),
 		'complete' => array('integer', 'in:0,1'),
+		'break_before' => array('integer', 'min:0'),
+		'break_after' => array('integer', 'min:0'),
 	);
 
 	/**

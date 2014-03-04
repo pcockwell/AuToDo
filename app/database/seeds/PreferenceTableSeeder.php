@@ -14,7 +14,6 @@ class PreferenceTableSeeder extends Seeder {
 
         $preferences = array(
                 $test_user_id => array(
-                    'break' => 20,
                     'show_fixed_events' => false,
                     'schedule_until_latest' => false
                 ),
@@ -22,7 +21,6 @@ class PreferenceTableSeeder extends Seeder {
                     'schedule_until_latest' => true
                 ),
                 $ochow_id => array(
-                    'break' => 20,
                     'show_fixed_events' => false
                 ),
         );
