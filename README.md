@@ -42,6 +42,7 @@ The `user_id` parameter is a numeric value, unique to each user.
 | Get       | GET           | /user/{user_id}   | Returns user with specified `user_id`.                                                        |
 | Update    | PUT           | /user/{user_id}   | Include a data object as described [here](#user). Returns the updated user.                   |
 | Delete    | DELETE        | /user/{user_id}   | Deletes the specified user.                                                                   |
+| Find      | GET           | /user/find        | Passing uri parameter ?email={email} finds the user with {email} and returns their info.      |
 
 ### Tasks
 
