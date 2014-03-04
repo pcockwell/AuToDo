@@ -6,12 +6,11 @@ class ApiController extends BaseController
 {
 
     const DAYS_IN_WEEK = 7;
-    const MIN_TASK_CHUNK = 30; // in minutes
 
     private $task_conflicts;
     private $event_conflicts;
     private $schedule;
-    private $empty_slots;
+    private $schedule_slots;
 
     private $schedule_start;
     private $task_break;
@@ -104,7 +103,7 @@ class ApiController extends BaseController
         $this->task_conflicts = array();
         $this->event_conflicts = array();
         $this->schedule = array();
-        $this->empty_slots = array();
+        $this->schedule_slots = array();
 
         // populate variables with caller preferences
         if( !is_null( $sched_start ) )
@@ -118,13 +117,13 @@ class ApiController extends BaseController
             $this->schedule_start = Carbon::now();
         }
 
-        $this->task_break = $prefs->break;
         $show_fixed_events = $prefs->show_fixed_events;
         $schedule_until_latest = $prefs->schedule_until_latest;
 
         // begin scheduling with a single infinite time frame
-        $this->empty_slots[] = array( 'start' => $this->schedule_start,
-                                      'end' => null );
+        $this->schedule_slots[] = array( 'start' => $this->schedule_start,
+                                      'end' => null,
+                                      'content' => null );
 
         $prioritized_tasks = self::sortTasks( $tasks );
 
@@ -139,8 +138,30 @@ class ApiController extends BaseController
             }
         }
 
-        // Partition empty slots
-        self::fillFixedEvents( $fixed_events, $last_due_time, false, true );
+        // Add fixed events to schedule
+        if( $show_fixed_events && $schedule_until_latest )
+        {
+            foreach( $fixed_events as $event )
+            {
+                $curr_last_due_time = $event->end_date->copy()->endOfDay();
+                if( is_null( $last_due_time ) || $curr_last_due_time->gt( $last_due_time ) )
+                {
+                    $last_due_time = $curr_last_due_time->copy();
+                }
+            }
+        }
+
+        // TODO: Will fixed events have collisions?  Do they need to be sorted?
+        // Sorted would mean earlier start time+date => implied higher priority
+
+        //Fill slots
+        foreach( $fixed_events as $event )
+        {
+            if( !self::addEvent( $event, $last_due_time, false ) )
+            {
+                $this->event_conflicts[] = $event->toArray();
+            }
+        }
 
         foreach( $prioritized_tasks as $priority => $task_list )
         {
@@ -153,26 +174,15 @@ class ApiController extends BaseController
             }
         }
 
-        // Add fixed events to schedule
-        if( $show_fixed_events )
+        //Actually add to schedule
+        if ($show_fixed_events)
         {
-            if( $schedule_until_latest )
+            $last_scheduled_task = end( $this->schedule );
+            $last_due_time = $last_scheduled_task['end']->copy()->endOfDay();
+            foreach( $fixed_events as $event )
             {
-                $last_due_time = null;
+                self::addEvent( $event, $last_due_time, true );
             }
-            else
-            {
-                if (!empty($this->schedule))
-                {
-                    $last_due_time = end( $this->schedule );
-                    $last_due_time = $last_due_time[ 'end' ]->copy();
-                }
-                else
-                {
-                    $last_due_time = Carbon::now();
-                }
-            }
-            self::fillFixedEvents( $fixed_events, $last_due_time, true, false );
         }
 
         // Return the schedule to the caller.
@@ -218,21 +228,7 @@ class ApiController extends BaseController
         return $prioritized_tasks;
     }
 
-    private function fillFixedEvents( $fixed_events, $last_due_time,
-                                      $fill_schedule, $fill_slots )
-    {
-        // TODO: Will fixed events have collisions?  Do they need to be sorted?
-        // Sorted would mean earlier start time+date => implied higher priority
-        foreach( $fixed_events as $event )
-        {
-            if( !self::addEvent( $event, $last_due_time, $fill_schedule, $fill_slots ) )
-            {
-                $this->event_conflicts[] = $event->toArray();
-            }
-        }
-    }
-
-    private function addEvent( $event, $last_due_time, $fill_schedule, $fill_slots )
+    private function addEvent( $event, $last_due_time, $fill_schedule )
     {
         $event_start_date = $event->start_date->gt( $this->schedule_start ) ?
                             $event->start_date->copy() : $this->schedule_start->copy();
@@ -287,24 +283,23 @@ class ApiController extends BaseController
                     {
                         $current_event_start = $current_date->copy()->addMinutes( $event->start_time );
                         $current_event_end = $current_date->copy()->addMinutes( $event->end_time );
-                        self::insertSchedule(
-                            $current_event_start,
-                            $current_event_end,
-                            $event );
+                        $idx = self::insertIndex( 0, count( $this->schedule )-1, $current_event_start );
+                        array_splice( $this->schedule, $idx, 0, array( array(
+                                'start' => $current_event_start->copy(),
+                                'end' => $current_event_end->copy(),
+                                'task' => $event->toArray()
+                            ) )
+                        );
                     }
-
-                    // Update empty time slots
-                    if( $fill_slots )
+                    else
                     {
-                        self::markFixedSlots(
-                            $current_date->copy()->addMinutes( $event->start_time ),
-                            $current_date->copy()->addMinutes( $event->end_time ) );
+                        self::fillFixedSlot( $current_date, $event );
                     }
 
     //     This part commented out just in case we ever want to do conflict checking for
     //     fixed events.
-    //                 $time_slot = $this->empty_slots[ $empty_slot_id ];
-    //                 array_splice( $this->empty_slots, $empty_slot_id, 1, array(
+    //                 $time_slot = $this->schedule_slots[ $empty_slot_id ];
+    //                 array_splice( $this->schedule_slots, $empty_slot_id, 1, array(
     //                         array( 'start' => $time_slot[ 'start' ]->copy(),
     //                                'end' => $current_event_start->copy() ),
     //                         array( 'start' => $current_event_end->copy(),
@@ -319,47 +314,65 @@ class ApiController extends BaseController
         }
         else
         {
-            // Add event to schedule
             if( $fill_schedule )
             {
-                $current_event_start = $event->start_date->copy()->addMinutes( $event->start_time );
-                $current_event_end = $event->end_date->copy()->addMinutes( $event->end_time );
-                self::insertSchedule(
-                    $current_event_start,
-                    $current_event_end,
-                    $event );
+                $current_event_start = $current_date->copy()->addMinutes( $event->start_time );
+                $current_event_end = $current_date->copy()->addMinutes( $event->end_time );
+                $idx = self::insertIndex( 0, count( $this->schedule )-1, $current_event_start );
+                array_splice( $this->schedule, $idx, 0, array( array(
+                        'start' => $current_event_start->copy(),
+                        'end' => $current_event_end->copy(),
+                        'task' => $event->toArray()
+                    ) )
+                );
+            }
+            else
+            {
+                self::fillFixedSlot( $current_date, $event );
             }
 
-            // Update empty time slots
-            if( $fill_slots )
-            {
-                self::markFixedSlots(
-                    $current_date->copy()->addMinutes( $event->start_time ),
-                    $current_date->copy()->addMinutes( $event->end_time ) );
-            }
         }
 
         return true;
     }
 
-    private function markFixedSlots( $start_time, $end_time )
+    private function fillFixedSlot( $current_date, $event )
     {
         $low = 0;
-        $high = count( $this->empty_slots )-1;
+        $max_slot_id = count( $this->schedule_slots )-1;
+        $high = $max_slot_id;
+
+        $current_date = $current_date->copy()->startOfDay();
+        $start_time = $current_date->copy()->addMinutes( $event->start_time );
+        $end_time = $current_date->copy()->addMinutes( $event->end_time );
+
         while( true )
         {
             assert( $low <= $high );
             $mid = floor( ( $low+$high )/2 );
-            $time_slot = $this->empty_slots[ $mid ];
+            $time_slot = $this->schedule_slots[ $mid ];
 
-            if( $start_time->gte( $time_slot[ 'start' ] )
-             && ( is_null( $time_slot[ 'end' ] )
-               || $start_time->lte( $time_slot[ 'end' ] ) ) )
+            $timeframe_start = $time_slot['start'];
+            $timeframe_end = $time_slot['end'];
+
+            if ($mid > 0)
+            {
+                $timeframe_start = $this->schedule_slots[ $mid - 1 ]['end'];
+            }
+
+            if ($mid < $max_slot_id)
+            {
+                $timeframe_end = $this->schedule_slots[ $mid + 1 ]['start'];
+            }
+
+            if( $start_time->gte( $timeframe_start )
+                && ( is_null( $timeframe_end )
+                    || $start_time->lte( $timeframe_end ) ) )
             {
                 break;
             }
-            elseif( !is_null( $time_slot[ 'end' ] )
-                 && $start_time->gt( $time_slot[ 'end' ] ) )
+            elseif( !is_null( $timeframe_end )
+                 && $start_time->gt( $timeframe_end ) )
             {
                 $low = $mid+1;
             }
@@ -370,48 +383,157 @@ class ApiController extends BaseController
         }
 
         assert( isset( $mid ) );
-        while( is_null( $this->empty_slots[ $mid ][ 'end' ] )
-            || $start_time->lte( $this->empty_slots[ $mid ][ 'end' ] ) )
+        $mid = (int) $mid;
+        $time_slot = $this->schedule_slots[ $mid ];
+
+        if ( is_null($time_slot['content']) )
         {
-            $time_slot = $this->empty_slots[ $mid ];
-            $in_start = $start_time->gte( $time_slot[ 'start' ] );
+
+            $extra_break = self::getExtraBreakTime($mid, $event);
+
+            $start_with_break_buffer = $start_time->copy()->subMinutes($extra_break['before']);
+            $end_with_break_buffer = $end_time->copy()->addMinutes($extra_break['after']);
+
+            $in_start = $time_slot[ 'start' ]->lte( $start_with_break_buffer );
             $in_end = is_null( $time_slot[ 'end' ] ) ?
-                      true : $end_time->lte( $time_slot[ 'end' ] );
+                      true : $time_slot[ 'end' ]->gte( $end_with_break_buffer );
 
             if( $in_start && $in_end )
             {
-                array_splice( $this->empty_slots, $mid, 1, array(
+                array_splice( $this->schedule_slots, $mid, 1, 
+                    array(
                         array( 'start' => $time_slot[ 'start' ]->copy(),
-                               'end' => $start_time->copy() ),
-                        array( 'start' => $end_time->copy(),
+                               'end' => $start_with_break_buffer,
+                               'content' => $time_slot[ 'content' ] ),
+                        array( 'start' => $start_time->copy(),
+                               'end' => $end_time->copy(),
+                               'content' => $event ),
+                        array( 'start' => $end_with_break_buffer,
                                'end' => is_null( $time_slot[ 'end' ] ) ?
-                                        null : $time_slot[ 'end' ]->copy() )
+                                        null : $time_slot[ 'end' ]->copy(),
+                               'content' => $time_slot[ 'content' ] )
                     )
                 );
-                break;
             }
             elseif( $in_start && !$in_end )
             {
-                array_splice( $this->empty_slots, $mid, 1, array(
+                array_splice( $this->schedule_slots, $mid, 1, 
+                    array(
                         array( 'start' => $time_slot[ 'start' ]->copy(),
-                               'end' => $start_time->copy() )
+                               'end' => $start_with_break_buffer,
+                               'content' => $time_slot[ 'content' ] ),
+                        array( 'start' => $start_time->copy(),
+                               'end' => $end_time->copy(),
+                               'content' => $event ),
                     )
                 );
-                $mid += 1;
             }
             elseif( !$in_start && $in_end )
             {
-                array_splice( $this->empty_slots, $mid, 1, array(
-                        array( 'start' => $end_time->copy(),
+                array_splice( $this->schedule_slots, $mid, 1, 
+                    array(
+                        array( 'start' => $start_time->copy(),
+                               'end' => $end_time->copy(),
+                               'content' => $event ),
+                        array( 'start' => $end_with_break_buffer,
                                'end' => is_null( $time_slot[ 'end' ] ) ?
-                                        null : $time_slot[ 'end' ]->copy() )
+                                        null : $time_slot[ 'end' ]->copy(),
+                               'content' => $time_slot[ 'content' ] )
                     )
                 );
-                break;
             }
             else
             {
-                array_splice( $this->empty_slots, $mid, 1 );
+                $num_slots_to_replace = 1;
+                $cur_slot_id_to_check = $mid + 1;
+                $end_time_with_break = $end_time->copy()->addMinutes($event->break_after);
+                while ($cur_slot_id_to_check <= $max_slot_id)
+                {
+                    $next_slot_end_with_break = $this->schedule_slots[ $cur_slot_id_to_check ]['end']->copy()->addMinutes($this->schedule_slots[ $cur_slot_id_to_check ]['content']->break_after);
+                    if ($end_time_with_break->gte($next_slot_end_with_break))
+                    {
+                        $num_slots_to_replace++;
+                    }
+                    $cur_slot_id_to_check++;
+                }
+
+                array_splice( $this->schedule_slots, $mid, $num_slots_to_replace, 
+                    array(
+                        array( 'start' => $start_time->copy(),
+                               'end' => $end_time->copy(),
+                               'content' => $event )
+                    ) 
+                );
+            }
+        }
+        else
+        {
+            //Current time slot has an event in it
+            $other_event = $time_slot['content'];
+
+            //Other event begins before this one
+            if ($time_slot['start']->lte($start_time))
+            {
+                $other_event_start_with_break = $time_slot['start']->copy()->subMinutes($other_event->break_before);
+                $start_with_break = $start_time->copy()->subMinutes($event->break_before);
+
+                $time_slot['content']->break_before += max($start_with_break->diffInMinutes($other_event_start_with_break), 0);
+                array_splice( $this->schedule_slots, $mid, 0, 
+                    array(
+                        array( 'start' => $start_time->copy(),
+                               'end' => $end_time->copy(),
+                               'content' => $event )
+                    )
+                );
+            }
+            //New event begins before this event (aka within other event's break time)
+            else
+            {
+                $other_event_start_with_break = $time_slot['start']->copy()->subMinutes($other_event->break_before);
+                $start_with_break = $start_time->copy()->subMinutes($event->break_before);
+
+                $event->break_before += max($other_event_start_with_break->diffInMinutes($start_with_break), 0);
+
+                //Need to check slot before this to see if it is occupied or not
+                $slot_before_id = $mid - 1;
+                if (array_key_exists($slot_before_id, $this->schedule_slots))
+                {
+                    //If it exists and is unoccupied, shorten it and add this event
+                    if (is_null($this->schedule_slots[$slot_before_id]['content']))
+                    {
+                        $start_with_break_buffer = $start_time->copy()->subMinutes($event->break_before);
+                        array_splice( $this->schedule_slots, $slot_before_id, 1, 
+                            array(
+                                array( 'start' => $time_slot[ 'start' ]->copy(),
+                                       'end' => $start_with_break_buffer,
+                                       'content' => $time_slot[ 'content' ] ),
+                                array( 'start' => $start_time->copy(),
+                                       'end' => $end_time->copy(),
+                                       'content' => $event ),
+                            )
+                        );
+                    }
+                    //If occupied, simply add this event after it 
+                    else
+                    {
+                        array_splice( $this->schedule_slots, $slot_before_id, 0, 
+                            array(
+                                array( 'start' => $start_time->copy(),
+                                       'end' => $end_time->copy(),
+                                       'content' => $event )
+                            )
+                        );
+                    }
+                }
+                else
+                {
+                    array_unshift( $this->schedule_slots, 
+                        array( 'start' => $start_time->copy(),
+                               'end' => $end_time->copy(),
+                               'content' => $event 
+                        )
+                    );
+                }
             }
         }
     }
@@ -420,7 +542,7 @@ class ApiController extends BaseController
 //     fixed events.
 //     private function findFixedSlot( $event_start, $event_end )
 //     {
-//         foreach( $this->empty_slots as $slot_id => $empty_slot )
+//         foreach( $this->schedule_slots as $slot_id => $empty_slot )
 //         {
 //             if( $empty_slot[ 'start' ]->gt( $event_start ) )
 //             {
@@ -439,101 +561,40 @@ class ApiController extends BaseController
 
     private function addTask( $task )
     {
-        $task_duration = $task->duration;
-        $task_min_split = is_null($task->min_split) ? self::MIN_TASK_CHUNK : $task->min_split;
+        $schedule_slot_id = self::findTimeSlot( $task );
 
-        while( $task_duration > 0 )
+        // TODO: half scheduled tasks
+        if( is_null($schedule_slot_id) )
         {
-            $empty_slot_id = self::findTimeSlot( $task_duration,
-                                                 $task->due,
-                                                 $task_min_split );
-
-            // TODO: half scheduled tasks
-            if( is_null($empty_slot_id) )
-            {
-                return false;
-            }
-
-            $time_slot = $this->empty_slots[ $empty_slot_id ];
-            if( is_null($time_slot[ 'end' ]) )
-            {
-                $time_slot_duration = null;
-            }
-            else
-            {
-                $time_slot_duration = $time_slot[ 'start' ]->diffInMinutes( $time_slot[ 'end' ] );
-            }
-
-            if( is_null($time_slot_duration) || $time_slot_duration >= $task_duration + $this->task_break )
-            {
-                // Add event to schedule
-                self::insertSchedule(
-                    $time_slot[ 'start' ],
-                    $time_slot[ 'start' ]->copy()->addMinutes( $task_duration ),
-                    $task );
-
-                // Update empty time slots
-                if( is_null($time_slot_duration)
-                 || $time_slot_duration - ( $task_duration + $this->task_break ) > 0 )
-                {
-                    array_splice( $this->empty_slots, $empty_slot_id, 1, array(
-                            array( 'start' => $time_slot[ 'start' ]->copy()->addMinutes( $task_duration + $this->task_break ),
-                                   'end' => is_null($time_slot[ 'end' ]) ?
-                                            null : $time_slot[ 'end' ]->copy() )
-                        )
-                    );
-                }
-                else
-                {
-                    array_splice( $this->empty_slots, $empty_slot_id, 1 );
-                }
-
-                $task_duration = 0;
-            }
-            else
-            {
-                if( $task_duration - ( $time_slot_duration + $this->task_break ) >= $task_min_split )
-                {
-                    self::insertSchedule(
-                        $time_slot[ 'start' ],
-                        $time_slot[ 'end' ],
-                        $task );
-
-                    // Update empty time slots
-                    array_splice( $this->empty_slots, $empty_slot_id, 1 );
-
-                    $task_duration -= $time_slot_duration;
-                }
-                else
-                {
-                    // Correctness: $duration_to_schedule will not exceed time slot
-                    // If enter else clause, then:
-                    // $task_duration - $time_slot_duration < $task_min_split
-                    //     $task_duration - $task_min_split < $time_slot_duration
-                    $duration_to_schedule = $task_duration - $task_min_split;
-                    // TODO: test and remove assertion
-                    assert( $time_slot_duration >= $duration_to_schedule + $this->task_break );
-                    self::insertSchedule(
-                        $time_slot[ 'start' ],
-                        $time_slot[ 'start' ]->copy()->addMinutes( $duration_to_schedule ),
-                        $task );
-
-                    // Update empty time slots
-                    if( $time_slot_duration >= $duration_to_schedule + $this->task_break )
-                    {
-                        array_splice( $this->empty_slots, $empty_slot_id, 1, array(
-                                array( 'start' => $time_slot[ 'start' ]->copy()->addMinutes( $task_duration + $this->task_break ),
-                                       'end' => $time_slot[ 'end' ] === null ?
-                                                null : $time_slot[ 'end' ]->copy() )
-                            )
-                        );
-                    }
-
-                    $task_duration -= $duration_to_schedule;
-
-                }
-            }
+            return false;
         }
+
+        $time_slot = $this->schedule_slots[ $schedule_slot_id ];
+
+        $extra_break = self::getExtraBreakTime($schedule_slot_id, $task);
+
+        $task_slot_start = $time_slot[ 'start' ]->copy()->addMinutes($extra_break['before']);
+        $task_slot_end = $task_slot_start->copy()->addMinutes($task->duration);
+
+        array_splice( $this->schedule_slots, $schedule_slot_id, 1, 
+            array(
+                array( 'start' => $task_slot_start,
+                       'end' => $task_slot_end,
+                       'content' => $task ),
+                array( 'start' => $task_slot_end->copy()->addMinutes( $extra_break['after'] ),
+                       'end' => $time_slot[ 'end' ] === null ?
+                                null : $time_slot[ 'end' ]->copy(),
+                       'content' => $time_slot[ 'content' ] )
+            )
+        );
+
+        $idx = self::insertIndex( 0, count( $this->schedule )-1, $task_slot_start );
+        array_splice( $this->schedule, $idx, 0, array( array(
+                'start' => $task_slot_start,
+                'end' => $task_slot_end,
+                'task' => $task->toArray()
+            ) )
+        );
 
         return true;
     }
@@ -543,30 +604,32 @@ class ApiController extends BaseController
     //        target task due time
     // Output: start time of empty time slot
     //         duration of empty time slot
-    private function findTimeSlot( $task_duration, $task_due, $min_split )
+    private function findTimeSlot( $task )
     {
-        foreach( $this->empty_slots as $slot_id => $empty_slot )
+        foreach( $this->schedule_slots as $slot_id => $slot )
         {
-            if( $empty_slot[ 'start' ]->gte( $task_due ) )
+            if( $slot[ 'start' ]->gte( $task->due ) )
             {
                 break;
             }
 
-            if( is_null($empty_slot[ 'end' ]) )
+            if ( $slot[ 'content' ] != null )
             {
-                $empty_slot_duration = null;
+                continue;
+            }
+
+            if( is_null($slot[ 'end' ]) )
+            {
+                $slot_duration = null;
             }
             else
             {
-                $empty_slot_duration = $empty_slot[ 'start' ]->diffInMinutes( $empty_slot[ 'end' ] );
+                $slot_duration = $slot[ 'start' ]->diffInMinutes( $slot[ 'end' ] );
             }
 
-            // Two times min_split to make sure that the other half of the split task
-            // will have at least min_split duration
-            if( is_null($empty_slot_duration)
-             || ( $task_duration >= 2*$min_split
-             && $empty_slot_duration >= $min_split + $this->task_break )
-             || $empty_slot_duration >= $task_duration + $this->task_break )
+            $extra_break = self::getExtraBreakTime($slot_id, $task);
+
+            if( is_null($slot_duration) || $slot_duration >= $task->duration + $extra_break['before'] + $extra_break['after'] )
             {
                 return $slot_id;
             }
@@ -575,15 +638,39 @@ class ApiController extends BaseController
         return null;
     }
 
-    private function insertSchedule( $start, $end, $task )
+    private function getExtraBreakTime($slot_id, $item)
     {
-        $idx = self::insertIndex( 0, count( $this->schedule )-1, $start );
-        array_splice( $this->schedule, $idx, 0, array( array(
-                'start' => $start->copy(),
-                'end' => $end->copy(),
-                'task' => $task->toArray()
-            ) )
+        $extra_break = array(
+            'before' => 0, 
+            'after' => 0
         );
+
+        $time_slot = $this->schedule_slots[$slot_id];
+        //Check break_before buffer
+        $slot_before_id = $slot_id - 1;
+        if (array_key_exists($slot_before_id, $this->schedule_slots))
+        {
+            $slot_before = $this->schedule_slots[$slot_before_id];
+            $break_before_needed = max($item->break_before, is_null($slot_before['content']) ? 0 : $slot_before['content']->break_after);
+            if ($slot_before['end']->diffInMinutes( $time_slot[ 'start' ] ) < $break_before_needed )
+            {
+                $extra_break['before'] = $break_before_needed - $slot_before['end']->diffInMinutes( $time_slot[ 'start' ] );
+            }
+        }
+
+        //Check break_after buffer
+        $slot_after_id = $slot_id + 1;
+        if (array_key_exists($slot_after_id, $this->schedule_slots))
+        {
+            $slot_after = $this->schedule_slots[$slot_after_id];
+            $break_after_needed = max($item->break_after, is_null($slot_after['content']) ? 0 : $slot_after['content']->break_before);
+            if ($slot_after['end']->diffInMinutes( $time_slot[ 'start' ] ) < $break_after_needed )
+            {
+                $extra_break['after'] = $break_after_needed - $slot_after['end']->diffInMinutes( $time_slot[ 'start' ] );
+            }
+        }
+
+        return $extra_break;
     }
 
     private function insertIndex( $low, $high, $start )
