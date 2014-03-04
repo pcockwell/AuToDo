@@ -177,8 +177,16 @@ class ApiController extends BaseController
         //Actually add to schedule
         if ($show_fixed_events)
         {
-            $last_scheduled_task = end( $this->schedule );
-            $last_due_time = $last_scheduled_task['end']->copy()->endOfDay();
+            if (!empty($this->schedule))
+            {
+                $last_scheduled_task = end( $this->schedule );
+                $last_due_time = $last_scheduled_task['end']->copy()->endOfDay();
+            }
+            else
+            {
+                $last_due_time = $this->schedule_start->copy()->endOfDay();
+            }
+
             foreach( $fixed_events as $event )
             {
                 self::addEvent( $event, $last_due_time, true );

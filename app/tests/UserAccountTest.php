@@ -10,7 +10,7 @@ class UserAccountTest extends TestCase {
     public function testUser_Create()
     {
         $content = '{ "name": "Testy McTest", "email": "testy.m@email.com" }';
-        $response = $this->call('POST', 'api/user', 
+        $response = $this->call('POST', '/api/user', 
             array(), array(), array('CONTENT_TYPE' => 'application/json'),
             $content);
 
@@ -28,7 +28,7 @@ class UserAccountTest extends TestCase {
     public function testUser_FindByEmail_exists()
     {
         $email = 'test@example.com';
-        $response = $this->call('GET', 'api/user/find',
+        $response = $this->call('GET', '/api/user/find',
             array('email'=>$email), array(), array(), '');
         $json_response = json_decode($response->getContent(), true);
 
@@ -47,7 +47,7 @@ class UserAccountTest extends TestCase {
         $this->setExpectedException($exception);
 
         $email = 'fake_email@shouldntexist.com';
-        $this->call('GET', 'api/user/find',
+        $this->call('GET', '/api/user/find',
             array('email'=>$email), array(), array(), '');
     }
 
@@ -58,6 +58,6 @@ class UserAccountTest extends TestCase {
     {
         $exception = 'Illuminate\Database\Eloquent\ModelNotFoundException';
         $this->setExpectedException($exception);
-        $this->call('GET', 'api/user/find', array(), array(), array(), '');
+        $this->call('GET', '/api/user/find', array(), array(), array(), '');
     }
 }
