@@ -42,21 +42,41 @@ Route::filter('apiInputFilter', function(){
     }
 });
 
-Route::group(array('prefix' => 'api', 'before' => 'apiInputFilter'), function()
+Route::filter('hasEmailInput', function ()
 {
-    Route::get('user/{user_id}/schedule', 'ApiController@userSchedule')->where('user_id', '[0-9]+');
-    // Controller to handle user accounts.
-    Route::resource('user', 'UserController', array('except' => array('index', 'create', 'edit')));
-    // Controller to handle user accounts.
-    Route::resource('user.task', 'TaskController', array('except' => array('create', 'edit')));
-    // Controller to handle user accounts.
-    Route::resource('user.fixedevent', 'FixedEventController', array('except' => array('create', 'edit')));
-    // Controller to handle user accounts.
-    Route::resource('preferences', 'PreferencesController', array('except' => array('index', 'create', 'edit')));
-
-    //Must always be the last entry in the file
-    Route::controller('/', 'ApiController');
+    if (!Input::has('email'))
+    {
+        return Response::make( 'No such function', 404 );
+    }
 });
+
+Route::group(array('prefix' => 'api', 'before' => 'apiInputFilter'), 
+    function()
+    {
+        Route::get('user/{user_id}/schedule', 'ApiController@userSchedule')
+            ->where('user_id', '[0-9]+');
+        
+        Route::get('user/find', array('before' => 'hasEmailInput',
+            'uses' => 'UserController@findByEmail'));
+
+        // Controller to handle user accounts.
+        Route::resource('user', 'UserController', 
+            array('except' => array('index', 'create', 'edit')));
+
+        // Controller to handle user accounts.
+        Route::resource('user.task', 'TaskController', 
+            array('except' => array('create', 'edit')));
+        // Controller to handle user accounts.
+        Route::resource('user.fixedevent', 'FixedEventController', 
+            array('except' => array('create', 'edit')));
+        // Controller to handle user accounts.
+        Route::resource('preferences', 'PreferencesController',
+            array('except' => array('index', 'create', 'edit')));
+
+        //Must always be the last entry in the file
+        Route::controller('/', 'ApiController');
+    }
+);
 
 Route::get('/', function()
 {

@@ -94,4 +94,15 @@ class UserController extends \BaseController {
         $user_model->user();
         return Response::make( 'User deleted', 200 );
     }
+
+    /**
+     * TODO: If an email is passed in, find that user.
+     *
+     */
+    public function findByEmail()
+    {
+        $email = Input::get('email');
+        $user = User::where('email', '=', $email)->firstOrFail();
+        return Response::make( $user, 200 );
+    }
 }

@@ -48,6 +48,12 @@ Log::useDailyFiles(storage_path().'/logs/'.$logFile);
 |
 */
 
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+App::error(function(ModelNotFoundException $e)
+{
+    return Response::make('Not Found', 404);
+});
+
 App::error(function(Exception $exception, $code)
 {
 	Log::error($exception);
