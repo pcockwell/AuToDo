@@ -309,13 +309,12 @@ class Parser {
                 $event_times_this_week = count($by_day) - $i;
                 break;
               }
+              assert($i != count($by_day-1));
             }
 
             // Align the recurrence count to the end of the current week.
             $days_to_add = 0;
-            if ($event_times_this_week >= $count) {
-              // Need to use day of week to make calculation since
-              // days of week isnt a contguous block
+            if ($event_times_this_week < $count) {
               $days_to_add +=
                   $by_day[count($by_day)-1] - $by_day[$start_dow_idx];
               $count -= $event_times_this_week;
@@ -381,7 +380,7 @@ class Parser {
       }
 
       // Create array of FixedEvent objects to return to caller.
-      $items[] = new FixedEvent(array(
+      $items[] = array(
           'name' => $item_data['summary'],
           'start_time' => 60*$start_datetime->hour + $start_datetime->minute,
           'end_time' => 60*$end_datetime->hour + $end_datetime->minute,
@@ -391,7 +390,7 @@ class Parser {
               $end_datetime->copy()->startOfDay(),
           'recurrences' => isset($recurrence) ? $recurrence : '[]',
           'break_before' => 0,
-          'break_after' => 0));
+          'break_after' => 0);
     }
 
     return $items;
