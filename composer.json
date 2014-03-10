@@ -3,6 +3,7 @@
     "description": "The Laravel Framework.",
     "keywords": ["framework", "laravel"],
 	"require": {
+		"php": ">=5.2.1",
 		"laravel/framework": "4.0.*"
 	},
 	"require-dev": {
@@ -18,7 +19,8 @@
 			"app/tests/TestCase.php"
 		],
         "psr-0": {
-            "Autodo": "app/lib/autodo/src"
+            "Autodo": "app/lib/autodo/src",
+            "GoogleApiClient": "app/lib/google-api-client/src"
         }
 	},
 	"scripts": {
