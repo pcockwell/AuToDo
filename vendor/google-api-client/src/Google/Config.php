@@ -38,7 +38,7 @@ class Google_Config
   {
     $this->configuration = array(
       // The application_name is included in the User-Agent HTTP header.
-      'application_name' => '',
+      'application_name' => 'AuToDo API',
 
       // Which Authentication, Storage and HTTP IO classes to use.
       'auth_class'    => 'Google_Auth_OAuth2',
@@ -69,9 +69,9 @@ class Google_Config
         'Google_Auth_OAuth2' => array(
           // Keys for OAuth 2.0 access, see the API console at
           // https://developers.google.com/console
-          'client_id' => '',
-          'client_secret' => '',
-          'redirect_uri' => '',
+          'client_id' => '390800262474-k7h75vpap3c3sribm4lvm0ssrfdr7vic.apps.googleusercontent.com',
+          'client_secret' => 'JU7YMvTNNXMmsB9GU6Evmv91',
+          'redirect_uri' => 'http://localhost/api/oauth2callback',
 
           // Simple API access key, also from the API console. Ensure you get
           // a Server key, and not a Browser key.

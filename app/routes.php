@@ -50,6 +50,8 @@ Route::filter('hasEmailInput', function ()
     }
 });
 
+Route::get('/api/oauth2callback', 'ApiController@oauth2Callback');
+
 Route::group(array('prefix' => 'api', 'before' => 'apiInputFilter'), 
     function()
     {

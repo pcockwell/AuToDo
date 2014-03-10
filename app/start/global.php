@@ -88,6 +88,28 @@ App::down(function()
 
 require app_path().'/filters.php';
 
+/*
+|--------------------------------------------------------------------------
+| Require Google API Files
+|--------------------------------------------------------------------------
+|
+| Require any necessary Google API files
+|
+*/
+
+set_include_path( get_include_path() . PATH_SEPARATOR . base_path() . '/vendor/google-api-client/src' );
+require_once 'Google/Client.php';
+require_once 'Google/Service/Calendar.php';
+
+/*
+|--------------------------------------------------------------------------
+| Extend Validator Functionality
+|--------------------------------------------------------------------------
+|
+| Add some additional validator functions for input data
+|
+*/
+
 Validator::extend('validate_recurrence', function($attribute, $value, $parameters)
 {
     if (!is_string($value)) return false;

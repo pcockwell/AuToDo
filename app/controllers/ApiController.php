@@ -14,7 +14,22 @@ class ApiController extends BaseController
     private $schedule_slots;
 
     private $schedule_start;
-    private $task_break;
+
+    private $google_client;
+    private $gcal_service;
+
+    public function __construct()
+    {
+        $this->google_client = new Google_Client();
+        $this->google_client->addScope("https://www.googleapis.com/auth/calendar");
+
+        $this->gcal_service = new Google_Service_Calendar($this->google_client);
+
+        if (Session::has('access_token')) 
+        {
+            $this->google_client->setAccessToken(Session::get('access_token'));
+        }
+    }
 
     public function missingMethod($parameters)
     {
@@ -26,13 +41,35 @@ class ApiController extends BaseController
         phpinfo();
     }
 
-    public function getParsedeventslist()
+    public function getGoogle()
     {
-      $items = Parser::parseEventsList(null);
-      foreach ($items as $item) {
-        print_r($item);
-        print_r("<br /><br />");
-      }
+        if (array_key_exists('logout', Input::all()))
+        {
+            Session::forget('access_token');
+            return 'You have just been logged out.';
+        }
+        
+        if (!Session::has('access_token'))
+        {
+            return Redirect::to($this->google_client->createAuthUrl());
+        }
+
+        $events = $this->gcal_service->events->listEvents('primary', array('timeMin' => Carbon::now()->toATOMString()));
+
+        $items = Parser::parseEventsList($events->items);
+        foreach ($items as $item) {
+            echo "<pre>" . print_r($item, true) . "</pre>";
+        }
+    }
+
+    public function oauth2Callback()
+    {
+        if (Request::getMethod() == 'GET' && Input::has('code'))
+        {
+            $this->google_client->authenticate(Input::get('code'));
+            Session::put('access_token', $this->google_client->getAccessToken());
+        }
+        return Redirect::to('/api/google');
     }
 
     // Make max priority accessible.
@@ -77,6 +114,11 @@ class ApiController extends BaseController
         $prefs = new Preference;
         $sched_start = null;
 
+        if (isset($data['schedule_start']))
+        {
+            $sched_start = $data['schedule_start'];
+        }
+
         if (isset($data['Task']))
         {
             foreach ($data['Task'] as $task)
@@ -84,6 +126,25 @@ class ApiController extends BaseController
                 $tasks[$task->name] = $task;
             }
         }
+
+        if (isset($data['google_calendar']) && $data['google_calendar'])
+        {
+            //Can't seem to save the session between calls to different functions
+            //print_r(Session::all());
+            //die();
+
+            if (Session::has('access_token'))
+            {
+                $events = $this->gcal_service->events->listEvents('primary', array('timeMin' => Carbon::parse( $sched_start )->toATOMString()));
+
+                $events = Parser::parseEventsList($events->items);
+                foreach ($events as $fixed_event) 
+                {
+                    $fixed_events[$fixed_event->name] = $fixed_event;
+                }
+            }
+        }
+
         if (isset($data['FixedEvent']))
         {
             foreach ($data['FixedEvent'] as $fixed_event)
@@ -95,11 +156,6 @@ class ApiController extends BaseController
         if (isset($data['Preference']))
         {
             $prefs = $data['Preference'];
-        }
-
-        if (isset($data['schedule_start']))
-        {
-            $sched_start = $data['schedule_start'];
         }
         $sch = $this->createSchedule($tasks, $fixed_events, $prefs, $sched_start);
         // prepare a 200 OK response
@@ -512,6 +568,18 @@ class ApiController extends BaseController
 
                 // 
                 $time_slot['content']->break_before += max($start_with_break->diffInMinutes($other_event_start_with_break), 0);
+
+                $other_event_end_with_break = $time_slot['end']->copy()->addMinutes($other_event->break_after);
+                $end_with_break = $end_time->copy()->addMinutes($event->break_after);
+                $time_slot_after = $this->schedule_slots[ $mid + 1 ];
+
+                $event->break_after += max($end_with_break->diffInMinutes($other_event_end_with_break), 0);
+
+                if (is_null($time_slot_after['content']))
+                {
+                    $time_slot_after['start'] = $end_time->copy()->addMinutes($event->break_after);
+                }
+
                 array_splice( $this->schedule_slots, $mid, 0, 
                     array(
                         array( 'start' => $start_time->copy(),
