@@ -20,12 +20,8 @@ class Parser {
   // to the epoch in UTC timezone.
   // 2) The attributes break_before and break_after are always given as 0 value
   // since there isn't a way to specify a break time from an event on GCal
-  //
-  // TODO: Remove the hardcoded string when the function is called using real
-  // data.
   public static function parseEventsList($eventsList) 
   {
-    
     $DAYS_OF_WEEK = array('SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA');
 
     $items = array();
@@ -158,7 +154,7 @@ class Parser {
                 $event_times_this_week = count($by_day) - $i;
                 break;
               }
-              assert($i != count($by_day-1));
+              assert($i != count($by_day)-1);
             }
 
             // Align the recurrence count to the end of the current week.
@@ -177,10 +173,11 @@ class Parser {
             // Takes care of the last week as well.
             while ($count > 0) {
               if ($count < count($by_day)) {
+                $days_to_add += ($interval-1)*NUM_DAYS_IN_WEEK;
                 $days_to_add += $by_day[$count-1] + 1;
                 $count = 0;
               } else {
-                $days_to_add += self::DAYS_IN_WEEK;
+                $days_to_add += $interval*self::DAYS_IN_WEEK;
                 $count -= count($by_day);
               }
             }
