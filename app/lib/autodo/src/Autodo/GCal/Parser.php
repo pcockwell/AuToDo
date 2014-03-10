@@ -112,6 +112,13 @@ class Parser {
 
       $start_datetime = new Carbon($item_data->start->dateTime);
       $end_datetime = new Carbon($item_data->end->dateTime);
+
+      //Get original timezone name from GCal event because we can only handle certain ones
+      $start_time_zone = $item_data->start->timeZone;
+      $end_time_zone = $item_data->end->timeZone;
+
+      $start_time = 60*$start_datetime->hour + $start_datetime->minute;
+      $end_time = 60*$end_datetime->hour + $start_datetime->minute;
       $repeat_until_never = false;
 
       // Create the recurrence json string.
@@ -219,20 +226,76 @@ class Parser {
         }
       } else { // Recurrence goes on forever.
         $repeat_until_never = true;
+
+        if ($frequency_str)
+        {
+          $today = Carbon::now();
+
+          //Put a time limit on end date time since we can't handle forever repeating right now
+          switch($frequency_str) {
+            case 'DAILY':
+              //Event happens forever, daily. Move start time to today
+              $start_datetime->year($today->year)->month($today->month)->day($today->day);
+              break;
+            case 'MONTHLY':
+              //Event happens forever, monthly. Move start time to this month if specific day has not passed, otherwise next month
+              $additional_month = 0;
+              if ($today->day > $start_datetime->day)
+              {
+                $additional_month = 1;
+              }
+              $start_datetime->year($today->year)->month($today->month + $additional_month);
+              break;
+            case 'YEARLY':
+              //Event happens forever, yearly. Move start time to this year if specific month has not passed, otherwise next year
+              $additional_year = 0;
+              if ($today->month > $start_datetime->month)
+              {
+                $additional_year = 1;
+              }
+              $start_datetime->year($today->year + $additional_year);
+              break;
+            default:
+              // Should never happen
+              assert(false);
+          }
+        }
+
+        //Rather than actually repeat forever, repeat for a 5 year
+        $end_datetime = $start_datetime->copy()->addYears(5);
       }
 
+      if (!$repeat_until_never && !isset($recurrence))
+      {
+        $end_datetime = $start_datetime;
+      }
+
+      if ($start_time_zone)
+      {
+        $start_datetime->setTimezone($start_time_zone);
+      }
+
+      if ($end_time_zone)
+      {
+        $end_datetime->setTimezone($end_time_zone);
+      }
+
+
       // Create array of FixedEvent objects to return to caller.
-      $items[] = new FixedEvent(array(
+      $event = new FixedEvent(array(
           'name' => $item_data->summary,
-          'start_time' => 60*$start_datetime->hour + $start_datetime->minute,
-          'end_time' => 60*$end_datetime->hour + $end_datetime->minute,
+          'start_time' => $start_time,
+          'end_time' => $end_time,
           'start_date' => $start_datetime->copy()->startOfDay(),
-          'end_date' => $repeat_until_never ?
-              Carbon::createFromTimeStampUTC(-1) :
-              $end_datetime->copy()->startOfDay(),
+          'end_date' => $end_datetime->copy()->startOfDay(),
           'recurrences' => isset($recurrence) ? $recurrence : '[]',
           'break_before' => 0,
           'break_after' => 0));
+
+      if ($event->start_date->lt($event->end_date) || ($event->start_date->eq($event->end_date) && $event->start_time < $event->end_time))
+      {
+        $items[] = $event;
+      }
     }
 
     return $items;

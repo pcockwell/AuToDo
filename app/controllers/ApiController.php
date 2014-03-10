@@ -28,6 +28,12 @@ class ApiController extends BaseController
         if (Session::has('access_token')) 
         {
             $this->google_client->setAccessToken(Session::get('access_token'));
+
+            if ($this->google_client->isAccessTokenExpired())
+            {
+                Session::forget('access_token');
+                $this->google_client->setAccessToken('null');
+            }
         }
     }
 
@@ -130,8 +136,6 @@ class ApiController extends BaseController
         if (isset($data['google_calendar']) && $data['google_calendar'])
         {
             //Can't seem to save the session between calls to different functions
-            //print_r(Session::all());
-            //die();
 
             if (Session::has('access_token'))
             {
@@ -388,6 +392,7 @@ class ApiController extends BaseController
         }
         else
         {
+            $current_date = $event_start_date->copy();
             if( $fill_schedule )
             {
                 $current_event_start = $current_date->copy()->addMinutes( $event->start_time );
