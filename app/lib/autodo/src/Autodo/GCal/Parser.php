@@ -7,8 +7,20 @@ use \FixedEvent;
 
 class Parser {
 
-  // TODO (oscar): note about time zones
-
+  // This function parses a json string from the events list call of the
+  // Google Calendar API. It currently returns an array of attribute arrays.
+  // Each attribute array can be used to construct a FixedEvent object.
+  //
+  // Special cases:
+  // 1) Some GCal events have a recurrence that never ends. In this case, since
+  // the FixedEvent object validation does not allow a null value for the
+  // 'end_date' attribute, the function returns a Carbon object corresponding
+  // to the epoch in UTC timezone.
+  // 2) The attributes break_before and break_after are always given as 0 value
+  // since there isn't a way to specify a break time from an event on GCal
+  //
+  // TODO: Remove the hardcoded string when the function is called using real
+  // data.
   public static function parseEventsList($json_string) {
     $json_string = '{
 "kind": "calendar#events",
@@ -170,17 +182,11 @@ class Parser {
     $str = substr($json_string, $items_start_pos);
     $str = str_replace("\n", "", $str);
     assert(preg_match('/\[.*\]/', $str, $match));
-//     print_r("size = " . count($match) . "<br />");
-//     print_r($match);
-//     print_r("<br /><br />");
 
     $items_array_str = $match[0];
     // Test phrase for the recursive regex
 //     preg_match_all('/\{([^{}]*|(?R))*\}/', '{1a{2b{3c{4d}5e}}6f}{7g{8h}9i}{}', $items_match, PREG_SET_ORDER);
     preg_match_all('/\{([^{}]*|(?R))*\}/', $items_array_str, $items_match, PREG_SET_ORDER);
-//     print_r("size = " . count($items_match) . "<br />");
-//     print_r($items_match);
-//     print_r("<br />");
 
     // Each element of $items_match is an array such that the matched string
     // is at index 0 of the inner array. For example, for 3 matched strings,
@@ -188,8 +194,6 @@ class Parser {
     // $items_match[0][0], $items_match[1][0], and $items_match[2][0].
     foreach ($items_match as $item_match) {
       $item_data = json_decode($item_match[0], true);
-      print_r($item_data);
-      print_r("<br /><br />");
       
       // Recurrence variables
       if (array_key_exists('recurrence', $item_data)) {
