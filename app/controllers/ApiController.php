@@ -1,6 +1,7 @@
 <?php
 
 use Carbon\Carbon;
+use Autodo\GCal\Parser;
 
 class ApiController extends BaseController
 {
@@ -23,6 +24,15 @@ class ApiController extends BaseController
     public function getPhpinfo()
     {
         phpinfo();
+    }
+
+    public function getParsedeventslist()
+    {
+      $items = Parser::parseEventsList(null);
+      foreach ($items as $item) {
+        print_r($item);
+        print_r("<br /><br />");
+      }
     }
 
     // Make max priority accessible.
@@ -396,7 +406,9 @@ class ApiController extends BaseController
 
         if ( is_null($time_slot['content']) )
         {
-
+            // extra_break is an array that shows how much break time is not
+            // accounted for between the slots before and after the chosen
+            // time slot in the schedule_slots array
             $extra_break = self::getExtraBreakTime($mid, $event);
 
             $start_with_break_buffer = $start_time->copy()->subMinutes($extra_break['before']);
@@ -406,6 +418,19 @@ class ApiController extends BaseController
             $in_end = is_null( $time_slot[ 'end' ] ) ?
                       true : $time_slot[ 'end' ]->gte( $end_with_break_buffer );
 
+            // TODO (oscar): What about in later cases for in_start and in_end?
+            // Is the task
+            // always guaranteed to fit into the time slot? If no, then is it
+            // just recording a portion of the fixed event?
+            //
+            // Nested Else case? I thought the binary search above made sure
+            // that the
+            // time slot at slot[$mid] was sufficient to hold the task. Why are
+            // we checking the rest of the array?
+            //
+            // If the time slot is currently holding an event: are breaks
+            // flexible in that we schedule as much as possible of the requested
+            // break?
             if( $in_start && $in_end )
             {
                 array_splice( $this->schedule_slots, $mid, 1, 
@@ -485,6 +510,7 @@ class ApiController extends BaseController
                 $other_event_start_with_break = $time_slot['start']->copy()->subMinutes($other_event->break_before);
                 $start_with_break = $start_time->copy()->subMinutes($event->break_before);
 
+                // 
                 $time_slot['content']->break_before += max($start_with_break->diffInMinutes($other_event_start_with_break), 0);
                 array_splice( $this->schedule_slots, $mid, 0, 
                     array(
