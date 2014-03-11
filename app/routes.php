@@ -26,7 +26,7 @@ Route::filter('apiInputFilter', function(){
     }
     else
     {
-        if (Request::getMethod() != 'GET')
+        if (Request::getMethod() != 'GET' && Request::getMethod() != 'DELETE')
         {
             // prepare a response, unsupported POST content
             $invalid_text = 'The request could not be fulfilled. Input provided was not an accepted data format.';
