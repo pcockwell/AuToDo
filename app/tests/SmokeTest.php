@@ -18,4 +18,24 @@ class SmokeTest extends TestCase {
         print $response;
     }
 
+    public function testCanParseDependencyInput() {
+        $data = json_decode( '
+            {
+              "dependencygraph" : {
+                "t1" : ["t2"],
+                "t2" : ["t3"]
+              }
+            }
+        ', true );
+
+        //Note that 2013-07-05 is a Friday, so only Sleep and Class apply as relevant events
+
+        $new_input = InputConverter::convertToObject($data);
+
+        $this->assertTrue(isset($new_input['DependencyGraph']));
+        $this->assertTrue($new_input['DependencyGraph']['t1'] == array('t2'));
+        $this->assertTrue($new_input['DependencyGraph']['t2'] == array('t3'));
+
+    }
+
 }
