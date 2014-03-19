@@ -18,6 +18,15 @@ class ApiController extends BaseController
     private $google_client;
     private $gcal_service;
 
+    public function getDependency() {
+        $data = Input::all();
+        if (isset($data['DependencyGraph'])) {
+            print_r($data['DependencyGraph']);
+        } else {
+            echo 'no dependency found';
+        }
+    }
+
     public function __construct()
     {
         $this->google_client = new Google_Client();
