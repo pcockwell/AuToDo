@@ -1,5 +1,7 @@
 <?php
 
+use Autodo\Support\InputConverter;
+
 class SmokeTest extends TestCase {
 
     /**
