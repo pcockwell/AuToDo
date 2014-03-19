@@ -34,9 +34,9 @@ class SmokeTest extends TestCase {
 
         $new_input = InputConverter::convertToObject($data);
 
-        $this->assertTrue(isset($new_input['DependencyGraph']));
-        $this->assertTrue($new_input['DependencyGraph']['t1'] == array('t2'));
-        $this->assertTrue($new_input['DependencyGraph']['t2'] == array('t3'));
+        $this->assertTrue(isset($new_input['dependencygraph']));
+        $this->assertTrue($new_input['dependencygraph']['t1'] == array('t2'));
+        $this->assertTrue($new_input['dependencygraph']['t2'] == array('t3'));
 
     }
 
