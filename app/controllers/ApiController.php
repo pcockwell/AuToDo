@@ -3,6 +3,8 @@
 use Carbon\Carbon;
 use Autodo\GCal\Parser;
 
+use Autodo\Support\InputConverter;
+
 class ApiController extends BaseController
 {
 
@@ -19,12 +21,15 @@ class ApiController extends BaseController
     private $gcal_service;
 
     public function getDependency() {
-        $data = Input::all();
-        if (isset($data['DependencyGraph'])) {
-            print_r($data['DependencyGraph']);
-        } else {
-            echo 'no dependency found';
-        }
+      $dg = new DependencyGraph(array(
+          'dependencies' => array(
+            2 => array(11),
+            8 => array(3, 7),
+            9 => array(8, 11),
+            10 => array(3, 11),
+            11 => array(5, 7))));
+      $dg->mergeableTaskList(null);
+
     }
 
     public function __construct()
