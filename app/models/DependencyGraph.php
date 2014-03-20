@@ -14,6 +14,8 @@ class DependencyGraph {
 
     public function __construct($attributes)
     {
+        print_r("attributes: ");
+        print_r($attributes);
         $this->dependencies = $attributes['dependencygraph'];
         print_r("construct: ");
         print_r($this->dependencies);
