@@ -10,27 +10,27 @@ class UserTableSeeder extends Seeder {
                 array(
                     'name' => 'Test User',
                     'email' => 'test@example.com',
-                    'password' => 'tu123'
+                    'password' => 'tu12345'
                 ),
                 array(
                     'name' => 'Patrick Cockwell',
                     'email' => 'pcockwell@gmail.com',
-                    'password' => 'pc123'
+                    'password' => 'pc12345'
                 ),
                 array(
                     'name' => 'Oscar Chow',
                     'email' => 'oscarchow51510@gmail.com',
-                    'password' => 'oc123'
+                    'password' => 'oc12345'
                 ),
                 array(
                     'name' => 'Steven Miclette',
                     'email' => 'steven.miclette@gmail.com',
-                    'password' => 'sm123'
+                    'password' => 'sm12345'
                 ),
                 array(
                     'name' => 'Tony Zhang',
                     'email' => 'y346zhang@gmail.com',
-                    'password' => 'tz123'
+                    'password' => 'tz12345'
                 ),
         );
 
