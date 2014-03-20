@@ -6,8 +6,8 @@ class InputConverter {
     
     public static function convertToObject($input)
     {
-        print_r("array: ");
-        print_r($array);
+        print_r("input: ");
+        print_r($input);
         $new_input = array();
 
         foreach($input as $key => $content)
