@@ -521,13 +521,13 @@ class ScheduleCreationTest extends TestCase {
                 $correct_tasks++;
             } else if( $key == 3 ) {
                 $this->assertTrue($timeslot->start->eq(new Carbon('2013-07-05 14:00:00')));
-                $this->assertTrue($timeslot->end->eq(new Carbon('2013-07-05 14:30:00')));
-                $this->assertTrue(trim($timeslot->task->name) == "name4");
+                $this->assertTrue($timeslot->end->eq(new Carbon('2013-07-05 14:40:00')));
+                $this->assertTrue(trim($timeslot->task->name) == "name1");
                 $correct_tasks++;
             } else if( $key == 4 ) {
-                $this->assertTrue($timeslot->start->eq(new Carbon('2013-07-05 14:40:00')));
+                $this->assertTrue($timeslot->start->eq(new Carbon('2013-07-05 14:50:00')));
                 $this->assertTrue($timeslot->end->eq(new Carbon('2013-07-05 15:20:00')));
-                $this->assertTrue(trim($timeslot->task->name) == "name1");
+                $this->assertTrue(trim($timeslot->task->name) == "name4");
                 $correct_tasks++;
             } else if( $key == 5 ) {
                 $this->assertTrue($timeslot->start->eq(new Carbon('2013-07-05 15:40:00')));
