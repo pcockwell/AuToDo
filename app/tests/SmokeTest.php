@@ -17,10 +17,13 @@ class SmokeTest extends TestCase {
 
         $response = $this->call('GET', '/');
         $this->assertRedirectedTo('http://pcockwell.github.io/AuToDo/');
-        print $response;
     }
 
     public function testCanParseDependencyInput() {
+        $this->markTestSkipped(
+          'DependencyGraph code still WIP.'
+        );
+    
         $data = json_decode( '
             {
               "dependencygraph" : {

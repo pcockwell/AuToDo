@@ -91,7 +91,7 @@ class UserController extends \BaseController {
         {
             return Response::make( 'No user with id '.$id, 400 );
         }
-        $user_model->user();
+        $user->delete();
         return Response::make( 'User deleted', 200 );
     }
 

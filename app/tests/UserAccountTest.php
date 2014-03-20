@@ -23,6 +23,37 @@ class UserAccountTest extends TestCase {
     }
 
     /**
+     *  Test the deletion of users.
+     */
+    public function testUser_Delete()
+    {
+        //Create user
+        $content = '{ "name": "Testy McTest", "email": "testy.m@email.com" }';
+        $response = $this->call('POST', '/api/user', 
+            array(), array(), array('CONTENT_TYPE' => 'application/json'),
+            $content);
+
+        $json_response = json_decode($response->getContent(), true);
+
+        $this->assertResponseStatus(201);
+        $this->assertEquals($json_response[ 'name' ], 'Testy McTest');
+        $this->assertEquals($json_response[ 'email' ], 'testy.m@email.com');
+        $this->assertTrue(is_numeric($json_response[ 'id' ]));
+
+        //Delete user based on ID
+        $user_id = $json_response['id'];
+        $this->call('DELETE', '/api/user/' . $user_id, 
+            array(), array(), array('CONTENT_TYPE' => 'application/json'), array());
+
+        //Assert that API cannot find user after delete
+        $response = $this->call('GET', '/api/user/' . $user_id, 
+            array(), array(), array('CONTENT_TYPE' => 'application/json'), array());
+
+        $this->assertResponseStatus(400);
+        $this->assertEquals($response->getContent(), 'No user with id '.$user_id);
+    }
+
+    /**
      * Test finding users by email address.
      */
     public function testUser_FindByEmail_exists()
