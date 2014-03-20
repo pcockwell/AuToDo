@@ -18,9 +18,9 @@ class InputConverter {
                 if (is_array($content))
                 {
                     $single_item = false;
-                    foreach($content as $content_item)
+                    foreach($content as $content_key => $content_item)
                     {
-                        if (!is_array($content_item))
+                        if (!is_numeric($content_key))
                         {
                             $single_item = true;
                             break;

@@ -6,15 +6,17 @@
  * Time: 2:03 PM
  */
 
-class DependencyGraph {
+class DependencyGraph extends Eloquent
+{
 
-    protected $dependencies;
+    protected $fillable = array('dependencies');
+
     protected $graph;
     protected $tasks;
 
-    public function __construct($attributes)
+    public function __construct($attributes, $exists = false)
     {
-        $this->dependencies = $attributes['dependencies'];
+        parent::__construct(array('dependencies' => $attributes), $exists);
         self::constructGraph();
     }
 
