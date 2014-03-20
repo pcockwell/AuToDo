@@ -311,17 +311,24 @@ class ApiController extends BaseController
               {
                   $prioritized_tasks[ $task->priority ] = array();
               }
-              $prioritized_tasks[ $task->priority ][] = $task->name;
+              $prioritized_tasks[ $task->priority ][] =
+                  array('due' => $task->due, 'name' => $task->name);
           }
 
           foreach ($prioritized_tasks as &$task_list) {
             usort($task_list,
                 function($a, $b) {
-                  if($tasks[$a]->due->eq($tasks[$b]->due)) {
+                  if($a['due']->eq($b['due'])) {
                     return 0;
                   }
-                  return $tasks[$a]->due->lt($tasks[$b]->due) ? -1 : 1;
+                  return $a['due']->lt($b['due']) ? -1 : 1;
                 });
+          }
+
+          foreach ($prioritized_tasks as &$task_list) {
+            foreach ($task_list as &$task_details) {
+              $task_details = $task_details['name'];
+            }
           }
         } else {
           // An array of name mapped tasks for dependency sorting
