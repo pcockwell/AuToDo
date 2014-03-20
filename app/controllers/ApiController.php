@@ -152,11 +152,11 @@ class ApiController extends BaseController
             }
         }
 
-//         if (isset($data['dependencygraph']))
-//         {
-//             $dep_graph = new DependencyGraph(array(
-//                 'dependencies' => $data['dependencygraph']));
-//         }
+        if (isset($data['dependencygraph']))
+        {
+            $dep_graph = new DependencyGraph(array(
+                'dependencies' => $data['dependencygraph']));
+        }
 
         if (isset($data['google_calendar']) && $data['google_calendar'])
         {
@@ -220,7 +220,7 @@ class ApiController extends BaseController
                                       'end' => null,
                                       'content' => null );
 
-        $prioritized_tasks = self::sortTasks( $tasks, null );
+        $prioritized_tasks = self::sortTasks( $tasks, $dep_graph );
 
         // Find last due date
         $last_due_time = null;
