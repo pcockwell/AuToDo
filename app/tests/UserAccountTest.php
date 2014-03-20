@@ -9,7 +9,8 @@ class UserAccountTest extends TestCase {
      */
     public function testUser_Create()
     {
-        $content = '{ "name": "Testy McTest", "email": "testy.m@email.com" }';
+        $content = '{ "name": "Testy McTest", "email": "testy.m@email.com",
+                      "password": "tmct123" }';
         $response = $this->call('POST', '/api/user', 
             array(), array(), array('CONTENT_TYPE' => 'application/json'),
             $content);
@@ -28,7 +29,8 @@ class UserAccountTest extends TestCase {
     public function testUser_Delete()
     {
         //Create user
-        $content = '{ "name": "Testy McTest", "email": "testy.m@email.com" }';
+        $content = '{ "name": "Testy McTest", "email": "testy.m@email.com",
+                      "password": "tmct123" }';
         $response = $this->call('POST', '/api/user', 
             array(), array(), array('CONTENT_TYPE' => 'application/json'),
             $content);
@@ -44,6 +46,8 @@ class UserAccountTest extends TestCase {
         $user_id = $json_response['id'];
         $this->call('DELETE', '/api/user/' . $user_id, 
             array(), array(), array('CONTENT_TYPE' => 'application/json'), array());
+
+        $this->assertResponseStatus(200);
 
         //Assert that API cannot find user after delete
         $response = $this->call('GET', '/api/user/' . $user_id, 

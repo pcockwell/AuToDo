@@ -7,11 +7,10 @@ class InputConverter {
     public static function convertToObject($input)
     {
         $new_input = array();
-
         foreach($input as $key => $content)
         {
             $class_type = str_singular(studly_case($key));
-            if (class_exists($class_type))
+            if (class_exists($class_type) && $class_type != "Password")
             {
                 $class = new \ReflectionClass($class_type);
                 $class_name = $class->getShortName();

@@ -55,6 +55,12 @@ Route::get('/api/oauth2callback', 'ApiController@oauth2Callback');
 Route::group(array('prefix' => 'api', 'before' => 'apiInputFilter'), 
     function()
     {
+        /*
+        Route::get('password/reset', array(
+            'uses' => 'RemindersController@request',
+            'as' => 'password.request'
+        ));
+        */
         Route::get('user/{user_id}/schedule', 'ApiController@userSchedule')
             ->where('user_id', '[0-9]+');
         
