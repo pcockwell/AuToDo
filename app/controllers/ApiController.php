@@ -90,6 +90,9 @@ class ApiController extends BaseController
     {
         $sch = null; 
         $user = User::find($user_id);
+        if (!isset($user)) {
+            return Response::make( "Not found", 404 );
+        }
         // error checking omitted
         $tasks = array();
         $fixed_events = array();
