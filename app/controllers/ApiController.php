@@ -39,6 +39,14 @@ class ApiController extends BaseController
         }
     }
 
+    public function getIcsfile()
+    {
+      $url = URL::to('basic.ics');
+      print_r("url = ");
+      print_r($url);
+      return Redirect::to($url);
+    }
+
     public function missingMethod($parameters)
     {
         return "ApiController@missingMethod";
