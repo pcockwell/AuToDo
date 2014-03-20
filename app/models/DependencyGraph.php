@@ -16,7 +16,7 @@ class DependencyGraph {
     {
         print_r("attributes: ");
         print_r($attributes);
-        $this->dependencies = $attributes['dependencygraph'];
+        $this->dependencies = $attributes['dependencies'];
         print_r("construct: ");
         print_r($this->dependencies);
         self::constructGraph();
