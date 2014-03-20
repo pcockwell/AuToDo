@@ -10,9 +10,6 @@ class InputConverter {
 
         foreach($input as $key => $content)
         {
-            if($key == "dependencygraph") {
-              continue;
-            }
             $class_type = str_singular(studly_case($key));
             if (class_exists($class_type))
             {
