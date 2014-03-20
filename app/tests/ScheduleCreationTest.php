@@ -361,7 +361,7 @@ class ScheduleCreationTest extends TestCase {
             {
               "dependencygraph" : {
                 "name4" : ["name1"]
-              }
+              },
               "tasks" : [
                 {
                   "name" : "name1",
