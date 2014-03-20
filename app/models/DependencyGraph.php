@@ -7,6 +7,7 @@
  */
 
 use Autodo\Exception\ValidationException;
+use Carbon\Carbon;
 
 class DependencyGraph extends Eloquent {
 
