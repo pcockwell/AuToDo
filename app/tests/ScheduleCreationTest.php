@@ -622,6 +622,7 @@ class ScheduleCreationTest extends TestCase {
         // Make sure that the tasks are in the correct scheduled order
         // with the correct start times.
         $correct_tasks = 0;
+        print_r($json_response);
         foreach( $json_response as $key => $timeslot ) {
 
             $timeslot["start"] = new Carbon($timeslot["start"]["date"], $timeslot["start"]["timezone"]);
