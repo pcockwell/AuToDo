@@ -186,13 +186,13 @@ class ApiController extends BaseController
         {
             $prefs = $data['Preference'];
         }
-        $sch = $this->createSchedule($tasks, $fixed_events, $prefs, $dep_graph, $sched_start);
+        $sch = $this->createSchedule($tasks, $fixed_events, $prefs, $sched_start, $dep_graph);
         // prepare a 200 OK response
         $response = Response::make( $sch, 200 );
         return $response;
     }
 
-    private function createSchedule($tasks, $fixed_events, $prefs, $dep_graph = null, $sched_start = null)
+    private function createSchedule($tasks, $fixed_events, $prefs, $sched_start = null, $dep_graph = null)
     {
         // Reset arrays for the start of the current schedule request
         $this->task_conflicts = array();
