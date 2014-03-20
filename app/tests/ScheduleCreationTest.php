@@ -360,7 +360,7 @@ class ScheduleCreationTest extends TestCase {
         print "\nMY TEST START\n";
         $content = '
             {
-              "dependencygraph" : {
+              "dep_graph" : {
                 "name4" : ["name1"]
               },
               "tasks" : [

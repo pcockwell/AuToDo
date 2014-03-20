@@ -20,21 +20,28 @@ class ApiController extends BaseController
     private $google_client;
     private $gcal_service;
 
-//     public function postDependency() {
-//       $data = Input::all();
-//       print_r($data);
-// //       $dg = new DependencyGraph(array(
-// //           'dependencies' => array(
-// //             2 => array(11),
-// //             8 => array(3, 7),
-// //             9 => array(8, 11),
-// //             10 => array(3, 11),
-// //             11 => array(5, 7))));
+    public function getDependency() {
+      $content = json_decode('
+        {
+          "dependencygraph" : {
+            "name4" : ["name1"]
+          }
+        }
+      ', true);
+      $data = InputConverter::convertToObject($content);
+      print_r($data);
+//       $dg = new DependencyGraph(array(
+//           'dependencies' => array(
+//             2 => array(11),
+//             8 => array(3, 7),
+//             9 => array(8, 11),
+//             10 => array(3, 11),
+//             11 => array(5, 7))));
 //       $dg = new DependencyGraph(array(
 //           'dependencies' => $data['dependencygraph']));
 //       $dg->sortTasks(null);
-// 
-//     }
+
+    }
 
     public function __construct()
     {
@@ -152,12 +159,12 @@ class ApiController extends BaseController
             }
         }
 
-        if (isset($data['dependencygraph']))
+        if (isset($data['dep_graph']))
         {
             print_r("graph: ");
-            print_r($data['dependencygraph']);
+            print_r($data['dep_graph']);
             $dep_graph = new DependencyGraph(
-                array('dependencies' => $data['dependencygraph']));
+                array('dependencies' => $data['dep_graph']));
         }
 
         if (isset($data['google_calendar']) && $data['google_calendar'])
