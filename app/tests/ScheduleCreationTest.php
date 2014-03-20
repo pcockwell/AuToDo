@@ -358,11 +358,11 @@ class ScheduleCreationTest extends TestCase {
     public function testApi_PostScheduleJSONDependenciesSuccess()
     {
         print "\nMY TEST START\n";
-        $original_content = '
+        $content = '
             {
-              "dependencygraph" : {
-                "name4" : ["name1"]
-              },
+              "dependencygraph" : [
+                { "name4" : ["name1"] }
+              ],
               "tasks" : [
                 {
                   "name" : "name1",
@@ -436,7 +436,6 @@ class ScheduleCreationTest extends TestCase {
         //Note that 2013-07-05 is a Friday, so only Sleep and Class apply as relevant events
 
         Route::enableFilters();
-        $content = $original_content;
         $response = $this->call('POST', '/api/schedule', 
             array(), array(), array('CONTENT_TYPE' => 'application/json'),
             $content);
@@ -489,7 +488,6 @@ class ScheduleCreationTest extends TestCase {
         print "\nNumber of correct tasks is ".$correct_tasks."\n";
         $this->assertTrue($correct_tasks == 6);
 
-        $content = $original_content;
         $response = $this->call('POST', '/api/schedule', 
             array(), array(), array('CONTENT_TYPE' => 'application/json', 'HTTP_ACCEPT' => 'application/xml'),
             $content);
