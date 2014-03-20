@@ -91,6 +91,9 @@ class UserController extends \BaseController {
         {
             return Response::make( 'No user with id '.$id, 400 );
         }
+        $user->tasks()->delete();
+        $user->fixedevents()->delete();
+        $user->preferences()->delete();
         $user->delete();
         return Response::make( 'User deleted', 200 );
     }

@@ -14,6 +14,7 @@ class Task extends Eloquent
 	 * @var string
 	 */
 	protected $table = 'tasks';
+    protected $softDelete = true;
 
 	protected $fillable = array('name', 'priority', 'due', 
         'duration', 'complete',

@@ -14,6 +14,7 @@ class FixedEvent extends Eloquent
 	 * @var string
 	 */
 	protected $table = 'fixed_events';
+    protected $softDelete = true;
 
 	protected $fillable = array('name', 'start_time', 'end_time', 
         'start_date', 'end_date', 'recurrences',
