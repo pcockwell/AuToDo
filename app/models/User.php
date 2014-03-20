@@ -19,7 +19,8 @@ class User extends Eloquent implements UserInterface, RemindableInterface
 
 	protected static $rules = array(
 		'name' => array('required', 'alpha_space', 'min:5'),
-		'email' => array('required', 'email')
+		'email' => array('required', 'email'),
+        'password' => array('required'),
 	);
 
 	/**
@@ -27,7 +28,7 @@ class User extends Eloquent implements UserInterface, RemindableInterface
 	 *
 	 * @var array
 	 */
-	//protected $hidden = array('password');
+	protected $hidden = array('password');
 
  	public function __construct($attributes = array(), $exists = false) 
  	{

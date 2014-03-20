@@ -13,11 +13,21 @@ class UserController extends \BaseController {
     {
         try
         {
-            $user = User::create(Input::all());
+            if (Input::has('password'))
+            {
+                $password = Hash::make(Input::get('password'));
+                $user = new User(Input::all());
+                $user->password = $password;
+                $user->save();
+            }
+            else
+            {
+                return Response::make( 'No password provided', 400 );
+            }
         }
         catch(ValidationException $v)
         {
-            return Response::make( $v->get(), 500 );
+            return Response::make( $v->get(), 400 );
         }
 
         if (isset($user) && $user != false) 

@@ -6,6 +6,7 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'AddPasswordToUserTable' => $baseDir . '/app/database/migrations/2014_03_20_035627_add_password_to_user_table.php',
     'ApiController' => $baseDir . '/app/controllers/ApiController.php',
     'Autodo\\Contracts\\XmlableInterface' => $baseDir . '/app/lib/autodo/src/Autodo/Contracts/XmlableInterface.php',
     'Autodo\\Database\\Eloquent\\Model' => $baseDir . '/app/lib/autodo/src/Autodo/Database/Eloquent/Model.php',
@@ -37,6 +38,7 @@ return array(
     'ClassPreloader\\Parser\\FileVisitor' => $vendorDir . '/classpreloader/classpreloader/src/ClassPreloader/Parser/FileVisitor.php',
     'ClassPreloader\\Parser\\NodeTraverser' => $vendorDir . '/classpreloader/classpreloader/src/ClassPreloader/Parser/NodeTraverser.php',
     'CreateFixedEvents' => $baseDir . '/app/database/migrations/2013_03_03_012037_create_fixed_events.php',
+    'CreatePasswordRemindersTable' => $baseDir . '/app/database/migrations/2014_03_20_191026_create_password_reminders_table.php',
     'CreatePreferencesTable' => $baseDir . '/app/database/migrations/2013_07_30_034424_create_preferences_table.php',
     'CreateTasks' => $baseDir . '/app/database/migrations/2013_03_04_013918_create_tasks.php',
     'CreateUsersTable' => $baseDir . '/app/database/migrations/2013_03_02_004759_create_users_table.php',
@@ -1488,9 +1490,7 @@ return array(
     'Psr\\Log\\InvalidArgumentException' => $vendorDir . '/psr/log/Psr/Log/InvalidArgumentException.php',
     'Psr\\Log\\LogLevel' => $vendorDir . '/psr/log/Psr/Log/LogLevel.php',
     'Psr\\Log\\LoggerAwareInterface' => $vendorDir . '/psr/log/Psr/Log/LoggerAwareInterface.php',
-    'Psr\\Log\\LoggerAwareTrait' => $vendorDir . '/psr/log/Psr/Log/LoggerAwareTrait.php',
     'Psr\\Log\\LoggerInterface' => $vendorDir . '/psr/log/Psr/Log/LoggerInterface.php',
-    'Psr\\Log\\LoggerTrait' => $vendorDir . '/psr/log/Psr/Log/LoggerTrait.php',
     'Psr\\Log\\NullLogger' => $vendorDir . '/psr/log/Psr/Log/NullLogger.php',
     'SessionHandlerInterface' => $vendorDir . '/symfony/http-foundation/Symfony/Component/HttpFoundation/Resources/stubs/SessionHandlerInterface.php',
     'Softdeletion' => $baseDir . '/app/database/migrations/2014_03_20_005618_softdeletion.php',
