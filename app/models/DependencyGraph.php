@@ -15,7 +15,6 @@ class DependencyGraph extends Eloquent {
     protected $graph;
     protected $tasks;
 
-    public function __construct($dep_array)
     public function __construct($attributes= array(), $exists = false)
     {
         parent::__construct($attributes, $exists);
