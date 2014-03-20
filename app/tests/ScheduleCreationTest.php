@@ -440,6 +440,7 @@ class ScheduleCreationTest extends TestCase {
             $content);
 
         $json_response = json_decode($response->getContent(), true);
+        print_r($json_response);
 
         // Make sure that the tasks are in the correct scheduled order
         // with the correct start times.
