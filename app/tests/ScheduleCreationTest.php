@@ -358,7 +358,7 @@ class ScheduleCreationTest extends TestCase {
     public function testApi_PostScheduleJSONDependenciesSuccess()
     {
         print "\nMY TEST START\n";
-        $content = '
+        $original_content = '
             {
               "dependencygraph" : {
                 "name4" : ["name1"]
@@ -436,58 +436,60 @@ class ScheduleCreationTest extends TestCase {
         //Note that 2013-07-05 is a Friday, so only Sleep and Class apply as relevant events
 
         Route::enableFilters();
-//         $response = $this->call('POST', '/api/schedule', 
-//             array(), array(), array('CONTENT_TYPE' => 'application/json'),
-//             $content);
-// 
-//         $json_response = json_decode($response->getContent(), true);
-// 
-//         // Make sure that the tasks are in the correct scheduled order
-//         // with the correct start times.
-//         $correct_tasks = 0;
-//         foreach( $json_response as $key => $timeslot ) {
-// 
-//             $timeslot["start"] = new Carbon($timeslot["start"]["date"], $timeslot["start"]["timezone"]);
-//             $timeslot["end"] = new Carbon($timeslot["end"]["date"], $timeslot["end"]["timezone"]);
-// 
-//             if( $key == 0 ) {
-//                 $this->assertTrue($timeslot['start']->eq(new Carbon('2013-07-05 00:00:00')));
-//                 $this->assertTrue($timeslot['end']->eq(new Carbon('2013-07-05 10:00:00')));
-//                 $this->assertTrue($timeslot['task']['name'] == "Sleep");
-//                 $correct_tasks++;
-//             } else if( $key == 1 ) {
-//                 $this->assertTrue($timeslot['start']->eq(new Carbon('2013-07-05 10:30:00')));
-//                 $this->assertTrue($timeslot['end']->eq(new Carbon('2013-07-05 11:00:00')));
-//                 $this->assertTrue($timeslot['task']['name'] == "name3");
-//                 $correct_tasks++;
-//             } else if( $key == 2 ) {
-//                 $this->assertTrue($timeslot['start']->eq(new Carbon('2013-07-05 11:30:00')));
-//                 $this->assertTrue($timeslot['end']->eq(new Carbon('2013-07-05 13:30:00')));
-//                 $this->assertTrue($timeslot['task']['name'] == "Class");
-//                 $correct_tasks++;
-//             } else if( $key == 3 ) {
-//                 $this->assertTrue($timeslot['start']->eq(new Carbon('2013-07-05 14:00:00')));
-//                 $this->assertTrue($timeslot['end']->eq(new Carbon('2013-07-05 14:40:00')));
-//                 $this->assertTrue($timeslot['task']['name'] == "name1");
-//                 $correct_tasks++;
-//             } else if( $key == 4 ) {
-//                 $this->assertTrue($timeslot['start']->eq(new Carbon('2013-07-05 14:50:00')));
-//                 $this->assertTrue($timeslot['end']->eq(new Carbon('2013-07-05 15:20:00')));
-//                 $this->assertTrue($timeslot['task']['name'] == "name4");
-//                 $correct_tasks++;
-//             } else if( $key == 5 ) {
-//                 $this->assertTrue($timeslot['start']->eq(new Carbon('2013-07-05 15:40:00')));
-//                 $this->assertTrue($timeslot['end']->eq(new Carbon('2013-07-05 16:40:00')));
-//                 $this->assertTrue($timeslot['task']['name'] == "name2");
-//                 $correct_tasks++;
-//             }
-//         }
-// 
-//         //print "Number of correct tasks is ".$correct_tasks;
-//         // Ensure that we got 8 correct tasks.
-//         print "\nNumber of correct tasks is ".$correct_tasks."\n";
-//         $this->assertTrue($correct_tasks == 6);
+        $content = $original_content;
+        $response = $this->call('POST', '/api/schedule', 
+            array(), array(), array('CONTENT_TYPE' => 'application/json'),
+            $content);
 
+        $json_response = json_decode($response->getContent(), true);
+
+        // Make sure that the tasks are in the correct scheduled order
+        // with the correct start times.
+        $correct_tasks = 0;
+        foreach( $json_response as $key => $timeslot ) {
+
+            $timeslot["start"] = new Carbon($timeslot["start"]["date"], $timeslot["start"]["timezone"]);
+            $timeslot["end"] = new Carbon($timeslot["end"]["date"], $timeslot["end"]["timezone"]);
+
+            if( $key == 0 ) {
+                $this->assertTrue($timeslot['start']->eq(new Carbon('2013-07-05 00:00:00')));
+                $this->assertTrue($timeslot['end']->eq(new Carbon('2013-07-05 10:00:00')));
+                $this->assertTrue($timeslot['task']['name'] == "Sleep");
+                $correct_tasks++;
+            } else if( $key == 1 ) {
+                $this->assertTrue($timeslot['start']->eq(new Carbon('2013-07-05 10:30:00')));
+                $this->assertTrue($timeslot['end']->eq(new Carbon('2013-07-05 11:00:00')));
+                $this->assertTrue($timeslot['task']['name'] == "name3");
+                $correct_tasks++;
+            } else if( $key == 2 ) {
+                $this->assertTrue($timeslot['start']->eq(new Carbon('2013-07-05 11:30:00')));
+                $this->assertTrue($timeslot['end']->eq(new Carbon('2013-07-05 13:30:00')));
+                $this->assertTrue($timeslot['task']['name'] == "Class");
+                $correct_tasks++;
+            } else if( $key == 3 ) {
+                $this->assertTrue($timeslot['start']->eq(new Carbon('2013-07-05 14:00:00')));
+                $this->assertTrue($timeslot['end']->eq(new Carbon('2013-07-05 14:40:00')));
+                $this->assertTrue($timeslot['task']['name'] == "name1");
+                $correct_tasks++;
+            } else if( $key == 4 ) {
+                $this->assertTrue($timeslot['start']->eq(new Carbon('2013-07-05 14:50:00')));
+                $this->assertTrue($timeslot['end']->eq(new Carbon('2013-07-05 15:20:00')));
+                $this->assertTrue($timeslot['task']['name'] == "name4");
+                $correct_tasks++;
+            } else if( $key == 5 ) {
+                $this->assertTrue($timeslot['start']->eq(new Carbon('2013-07-05 15:40:00')));
+                $this->assertTrue($timeslot['end']->eq(new Carbon('2013-07-05 16:40:00')));
+                $this->assertTrue($timeslot['task']['name'] == "name2");
+                $correct_tasks++;
+            }
+        }
+
+        //print "Number of correct tasks is ".$correct_tasks;
+        // Ensure that we got 8 correct tasks.
+        print "\nNumber of correct tasks is ".$correct_tasks."\n";
+        $this->assertTrue($correct_tasks == 6);
+
+        $content = $original_content;
         $response = $this->call('POST', '/api/schedule', 
             array(), array(), array('CONTENT_TYPE' => 'application/json', 'HTTP_ACCEPT' => 'application/xml'),
             $content);
