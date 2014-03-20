@@ -152,11 +152,11 @@ class ApiController extends BaseController
             }
         }
 
-        if (isset($data['dependencygraph']))
-        {
-            $dep_graph = new DependencyGraph(array(
-                'dependencies' => $data['dependencygraph']));
-        }
+//         if (isset($data['dependencygraph']))
+//         {
+//             $dep_graph = new DependencyGraph(array(
+//                 'dependencies' => $data['dependencygraph']));
+//         }
 
         if (isset($data['google_calendar']) && $data['google_calendar'])
         {
@@ -297,7 +297,7 @@ class ApiController extends BaseController
     // tasks to be scheduled.
     // Input: array of unsorted tasks
     // Output: array of arrays of sorted tasks
-    //         inner array has key=task->name, value=task->due
+    //         inner array has no key, value=task->name
     private function sortTasks( $tasks, $dep_graph )
     {
         // An array of priorities each mapping to an array of tasks
