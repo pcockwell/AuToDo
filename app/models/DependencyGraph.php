@@ -13,8 +13,7 @@ class DependencyGraph {
 
     public function __construct($dep_array)
     {
-        $this->dependencies = $dep_array
-        parent::__construct($attributes, $exists);
+        $this->dependencies = $dep_array;
         self::constructGraph();
     }
 
