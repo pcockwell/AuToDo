@@ -12,6 +12,10 @@ class DependencyGraph extends Eloquent {
 
     protected $fillable = array('dependencies');
 
+    protected static $rules = array(
+      'dependencies' => array('required'),
+    );
+
     protected $graph;
     protected $tasks;
 
