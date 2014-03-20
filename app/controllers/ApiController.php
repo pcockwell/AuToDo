@@ -154,6 +154,8 @@ class ApiController extends BaseController
 
         if (isset($data['dependencygraph']))
         {
+            print_r("graph: ");
+            print_r($data['dependencygraph']);
             $dep_graph = new DependencyGraph($data['dependencygraph']);
         }
 
