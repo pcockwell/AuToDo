@@ -20,17 +20,21 @@ class ApiController extends BaseController
     private $google_client;
     private $gcal_service;
 
-    public function getDependency() {
-      $dg = new DependencyGraph(array(
-          'dependencies' => array(
-            2 => array(11),
-            8 => array(3, 7),
-            9 => array(8, 11),
-            10 => array(3, 11),
-            11 => array(5, 7))));
-      $dg->mergeableTaskList(null);
-
-    }
+//     public function postDependency() {
+//       $data = Input::all();
+//       print_r($data);
+// //       $dg = new DependencyGraph(array(
+// //           'dependencies' => array(
+// //             2 => array(11),
+// //             8 => array(3, 7),
+// //             9 => array(8, 11),
+// //             10 => array(3, 11),
+// //             11 => array(5, 7))));
+//       $dg = new DependencyGraph(array(
+//           'dependencies' => $data['dependencygraph']));
+//       $dg->sortTasks(null);
+// 
+//     }
 
     public function __construct()
     {
@@ -130,6 +134,7 @@ class ApiController extends BaseController
         $data = Input::all();
         // error checking omitted
         $tasks = array();
+        $dep_graph = null;
         $fixed_events = array();
         $prefs = new Preference;
         $sched_start = null;
@@ -145,6 +150,12 @@ class ApiController extends BaseController
             {
                 $tasks[$task->name] = $task;
             }
+        }
+
+        if (isset($data['dependencygraph']))
+        {
+            $dep_graph = new DependencyGraph(array(
+                'dependencies' => $data['dependencygraph']));
         }
 
         if (isset($data['google_calendar']) && $data['google_calendar'])
@@ -175,13 +186,13 @@ class ApiController extends BaseController
         {
             $prefs = $data['Preference'];
         }
-        $sch = $this->createSchedule($tasks, $fixed_events, $prefs, $sched_start);
+        $sch = $this->createSchedule($tasks, $fixed_events, $prefs, $dep_graph, $sched_start);
         // prepare a 200 OK response
         $response = Response::make( $sch, 200 );
         return $response;
     }
 
-    private function createSchedule( $tasks, $fixed_events, $prefs, $sched_start = null )
+    private function createSchedule($tasks, $fixed_events, $prefs, $dep_graph = null, $sched_start = null)
     {
         // Reset arrays for the start of the current schedule request
         $this->task_conflicts = array();
@@ -209,13 +220,13 @@ class ApiController extends BaseController
                                       'end' => null,
                                       'content' => null );
 
-        $prioritized_tasks = self::sortTasks( $tasks );
+        $prioritized_tasks = self::sortTasks( $tasks, $dep_graph );
 
         // Find last due date
         $last_due_time = null;
         foreach( $prioritized_tasks as $priority => $task_list )
         {
-            $curr_last_due_time = end( $task_list );
+            $curr_last_due_time = $tasks[end($task_list)]->due;
             if( is_null( $last_due_time ) || $curr_last_due_time->gt( $last_due_time ) )
             {
                 $last_due_time = $curr_last_due_time->copy();
@@ -249,7 +260,7 @@ class ApiController extends BaseController
 
         foreach( $prioritized_tasks as $priority => $task_list )
         {
-            foreach( $task_list as $task_name => $task )
+            foreach( $task_list as $task_name )
             {
                 if( !self::addTask( $tasks[ $task_name ] ) )
                 {
@@ -287,33 +298,86 @@ class ApiController extends BaseController
     // Input: array of unsorted tasks
     // Output: array of arrays of sorted tasks
     //         inner array has key=task->name, value=task->due
-    private function sortTasks( $tasks )
+    private function sortTasks( $tasks, $dep_graph )
     {
         // An array of priorities each mapping to an array of tasks
         $prioritized_tasks = array();
 
-        // Put each task into its priority array
-        foreach( $tasks as $task )
-        {
-            if( !isset( $prioritized_tasks[ $task->priority ] ) )
-            {
-                $prioritized_tasks[ $task->priority ] = array();
-            }
-            $prioritized_tasks[ $task->priority ][ $task->name ] = $task->due;
-        }
+        if (is_null($dep_graph)) {
+          // Put each task into its priority array
+          foreach( $tasks as $task )
+          {
+              if( !isset( $prioritized_tasks[ $task->priority ] ) )
+              {
+                  $prioritized_tasks[ $task->priority ] = array();
+              }
+              $prioritized_tasks[ $task->priority ][] = $task->name;
+          }
 
-        foreach( $prioritized_tasks as &$task_list )
-        {
-            uasort( $task_list, 
-                function ($a, $b)
-                {
-                    if ( $a->eq($b) )
-                    {
-                        return 0;
-                    }
-                    return $a->lt($b) ? -1 : 1;
+          foreach ($prioritized_tasks as &$task_list) {
+            usort($task_list,
+                function($a, $b) {
+                  if($tasks[$a]->due->eq($tasks[$b]->due)) {
+                    return 0;
+                  }
+                  return $tasks[$a]->due->lt($tasks[$b]->due) ? -1 : 1;
+                });
+          }
+        } else {
+          // An array of name mapped tasks for dependency sorting
+          $dep_tasks = array();
+          foreach ($tasks as $task) {
+            $dep_tasks[$task->name] = $task;
+          }
+
+          // Get an array of dep sorted tasks. The array contains the name of
+          // the task.
+          $dep_sorted_tasks = $dep_graph->sortTasks($dep_tasks);
+          $dep_free_tasks = $dep_graph->depFreeTasks($dep_tasks);
+
+          usort($dep_free_tasks,
+              function($a, $b) {
+                if($a->due->eq($b->due)) {
+                  return 0;
                 }
-            );
+                return $a->due->lt($b->due) ? -1 : 1;
+              });
+
+          // $dep_free_tasks is now sorted by due date and contains only tasks
+          // that are not found within the dependency graph.
+          $i = 0; // Pointer for $dep_sorted_tasks
+          $j = 0; // Pointer for $dep_free_tasks
+          while ($i < count($dep_sorted_tasks) && $j < count($dep_free_tasks)) {
+            if ($dep_free_tasks[$j]->due->lt(
+                $dep_tasks[$dep_sorted_tasks[$i]]->due)) {
+              $task_to_add = $dep_free_tasks[$j];
+              ++$j;
+            } else {
+              $task_to_add = $dep_tasks[$dep_sorted_tasks[$i]];
+              ++$i;
+            }
+            
+            if(!array_key_exists($task_to_add->priority, $prioritized_tasks)) {
+              $prioritized_tasks[$task_to_add->priority] = array();
+            }
+            $prioritized_tasks[$task_to_add->priority][] = $task_to_add->name;
+          }
+
+          for(; $i < count($dep_sorted_tasks); ++$i) {
+            $curr_task = $dep_tasks[$dep_sorted_tasks[$i]];
+            if(!array_key_exists($curr_task->priority, $prioritized_tasks)) {
+              $prioritized_tasks[$curr_task->priority] = array();
+            }
+            $prioritized_tasks[$curr_task->priority][] = $curr_task->name;
+          }
+
+          for(; $j < count($dep_free_tasks); ++$j) {
+            $curr_task = $dep_free_tasks[$j];
+            if(!array_key_exists($curr_task->priority, $prioritized_tasks)) {
+              $prioritized_tasks[$curr_task->priority] = array();
+            }
+            $prioritized_tasks[$curr_task->priority][] = $curr_task->name;
+          }
         }
 
         krsort( $prioritized_tasks );

@@ -17,7 +17,7 @@ class DependencyGraph extends Eloquent {
     );
 
     protected $graph;
-
+    protected $tasks;
 
     public function __construct($attributes = array(), $exists = false)
     {
@@ -35,12 +35,21 @@ class DependencyGraph extends Eloquent {
           $this->graph[$dep_task_name][] = $task_name;
         }
       }
-      print_r("reversed graph:<br />");
-      print_r($this->graph);
-      print_r("<br /><br />");
     }
 
-    public function mergeableTaskList($tasks) {
+    public function depFreeTasks($tasks) {
+      $dep_free_tasks = array();
+      foreach ($tasks as $task_name => $task) {
+        if (!array_key_exists($task_name, $this->dependencies) &&
+            !array_key_exists($task_name, $this->graph)) {
+          $dep_free_tasks[] = $task;
+        }
+      }
+    }
+
+    public function sortTasks($tasks) {
+      $this->tasks = $tasks;
+
       // Find roots of graph.
       $task_tracker = array();
       foreach ($this->dependencies as $task_name => $deps) {
@@ -56,17 +65,64 @@ class DependencyGraph extends Eloquent {
         }
       }
 
-      // Start a separate array with each root.
-      $roots = array();
+      $queue = array();
       foreach ($task_tracker as $task_name => $not_root) {
         if($not_root == 0) {
-          $roots[$task_name] = array($task_name);
+          self::insertInOrder($queue, $task_name);
+          $task_tracker[$task_name] = 0;
+        }
+      }
+  
+      $sorted_tasks = array();
+      $task_tracker = array();
+      foreach ($queue as $task_name) {
+        $task_tracker[$task_name] = null;
+      }
+
+      while (!empty($queue)) {
+        $curr_task_name = $queue[0];
+        array_splice($queue, 0, 1);
+        $sorted_tasks[] = $curr_task_name;
+        $task_tracker[$curr_task_name] = 1;
+
+        if (array_key_exists($curr_task_name, $this->graph)) {
+          foreach ($this->graph[$curr_task_name] as $neighbour_name) {
+            if (!self::depSatisfied($task_tracker, $neighbour_name)) {
+              continue;
+            }
+            if (!array_key_exists($neighbour_name, $task_tracker)) {
+              self::insertInOrder($queue, $neighbour_name);
+              $task_tracker[$neighbour_name] = 0;
+            }
+          }
         }
       }
 
-      print_r("roots:<br />");
-      print_r($roots);
-      print_r("<br /><br />");
-      
+      return $sorted_tasks;
+    }
+
+    public function insertInOrder(&$list, $ele) {
+      for ($i = 0; $i < count($list); ++$i) {
+        if ($list[$i] == $ele) {
+          return;
+        } else if ($this->tasks[$list[$i]]->due->gt($this->tasks[$ele]->due)) {
+          array_splice($list, $i, 0, $ele);
+          return;
+        }
+      }
+      $list[] = $ele;
+    }
+
+    public function depSatisfied($task_tracker, $task_name) {
+      if(!array_key_exists($task_name, $this->dependencies)) {
+        return true;
+      }
+      foreach ($this->dependencies[$task_name] as $dep_task_name) {
+        if(!array_key_exists($dep_task_name, $task_tracker) ||
+           $task_tracker[$dep_task_name] == 0) {
+          return false;
+        }
+      }
+      return true;
     }
 } 
