@@ -6,12 +6,13 @@ class InputConverter {
     
     public static function convertToObject($input)
     {
-        print_r("input: ");
-        print_r($input);
         $new_input = array();
 
         foreach($input as $key => $content)
         {
+            if($key == "dependencygraph") {
+              continue;
+            }
             $class_type = str_singular(studly_case($key));
             if (class_exists($class_type))
             {
