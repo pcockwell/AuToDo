@@ -15,7 +15,7 @@ class DependencyGraph {
     {
         $db = debug_backtrace();
         print_r("db: ");
-        print_r($db);
+        print_r(array_shift($db));
         $this->dependencies = $dep_array;
         print_r("construct: ");
         print_r($this->dependencies);
