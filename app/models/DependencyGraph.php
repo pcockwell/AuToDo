@@ -6,21 +6,14 @@
  * Time: 2:03 PM
  */
 
-use Autodo\Exception\ValidationException;
-
-class DependencyGraph extends Eloquent {
-
-    protected $fillable = array('dependencies');
-
-    protected static $rules = array(
-        'dependencies' => array('required'),
-    );
+class DependencyGraph {
 
     protected $graph;
     protected $tasks;
 
-    public function __construct($attributes = array(), $exists = false)
+    public function __construct($dep_array)
     {
+        $this->dependencies = $dep_array
         parent::__construct($attributes, $exists);
         self::constructGraph();
     }

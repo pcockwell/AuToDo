@@ -154,8 +154,7 @@ class ApiController extends BaseController
 
         if (isset($data['dependencygraph']))
         {
-            $dep_graph = new DependencyGraph(array(
-                'dependencies' => $data['dependencygraph']));
+            $dep_graph = new DependencyGraph($data['dependencygraph']);
         }
 
         if (isset($data['google_calendar']) && $data['google_calendar'])
