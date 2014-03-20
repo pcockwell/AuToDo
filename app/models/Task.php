@@ -21,7 +21,7 @@ class Task extends Eloquent
         'break_before', 'break_after');
 
 	protected static $rules = array(
-		'name' => array('required', 'alpha_num_space', 'min:1'),
+		'name' => array('required', 'min:1'),
 		'priority' => array('required', 'integer'),
 		'due' => array('required', 'date'),
 		'duration' => array('required', 'integer', 'min:1'),
