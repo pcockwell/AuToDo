@@ -14,6 +14,7 @@ class DependencyGraph {
     public function __construct($dep_array)
     {
         $this->dependencies = $dep_array;
+        print_r($this->dependencies);
         self::constructGraph();
     }
 
