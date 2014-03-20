@@ -69,25 +69,26 @@ Route::group(array('prefix' => 'api', 'before' => 'apiInputFilter'),
             'uses' => 'RemindersController@request'
         ));
 
-        Route::get('user/{user_id}/schedule', 'ApiController@userSchedule')
+        Route::get('user/{user_id}/schedule', array('before' => 'auth.basic.once', 
+            'uses' => 'ApiController@userSchedule'))
             ->where('user_id', '[0-9]+');
         
-        Route::get('user/find', array('before' => 'hasEmailInput',
+        Route::get('user/find', array('before' => 'hasEmailInput|auth.basic.once',
             'uses' => 'UserController@findByEmail'));
 
         // Controller to handle user accounts.
         Route::resource('user', 'UserController', 
-            array('except' => array('index', 'create', 'edit')));
+            array('before' => 'auth.basic.once', 'except' => array('index', 'create', 'edit')));
 
         // Controller to handle user accounts.
         Route::resource('user.task', 'TaskController', 
-            array('except' => array('create', 'edit')));
+            array('before' => 'auth.basic.once', 'except' => array('create', 'edit')));
         // Controller to handle user accounts.
         Route::resource('user.fixedevent', 'FixedEventController', 
-            array('except' => array('create', 'edit')));
+            array('before' => 'auth.basic.once', 'except' => array('create', 'edit')));
         // Controller to handle user accounts.
         Route::resource('preferences', 'PreferencesController',
-            array('except' => array('index', 'create', 'edit')));
+            array('before' => 'auth.basic.once', 'except' => array('index', 'create', 'edit')));
 
         //Must always be the last entry in the file
         Route::controller('/', 'ApiController');
