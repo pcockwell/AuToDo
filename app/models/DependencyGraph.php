@@ -45,6 +45,7 @@ class DependencyGraph extends Eloquent {
           $dep_free_tasks[] = $task;
         }
       }
+      return $dep_free_tasks;
     }
 
     public function sortTasks($tasks) {
