@@ -14,20 +14,13 @@ class DependencyGraph {
 
     public function __construct($attributes)
     {
-        print_r("attributes: ");
-        print_r($attributes);
         $this->dependencies = $attributes['dependencies'];
-        print_r("construct: ");
-        print_r($this->dependencies);
         self::constructGraph();
     }
 
     private function constructGraph() {
       $this->graph = array();
       foreach ($this->dependencies as $task_name => $deps) {
-        print_r("deps:<br />");
-        print_r($deps);
-        print_r("<br />");
         foreach ($deps as $dep_task_name) {
           if(!array_key_exists($dep_task_name, $this->graph)) {
             $this->graph[$dep_task_name] = array();
