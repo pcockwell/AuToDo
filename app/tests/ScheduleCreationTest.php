@@ -440,7 +440,6 @@ class ScheduleCreationTest extends TestCase {
             $content);
 
         $json_response = json_decode($response->getContent(), true);
-        print_r($json_response);
 
         // Make sure that the tasks are in the correct scheduled order
         // with the correct start times.
@@ -472,7 +471,7 @@ class ScheduleCreationTest extends TestCase {
                 $correct_tasks++;
             } else if( $key == 4 ) {
                 $this->assertTrue($timeslot['start']->eq(new Carbon('2013-07-05 14:50:00')));
-                $this->assertTrue($timeslot['end']->eq(new Carbon('2013-07-05 15:30:00')));
+                $this->assertTrue($timeslot['end']->eq(new Carbon('2013-07-05 15:20:00')));
                 $this->assertTrue($timeslot['task']['name'] == "name4");
                 $correct_tasks++;
             } else if( $key == 5 ) {
