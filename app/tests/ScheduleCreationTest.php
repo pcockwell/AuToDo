@@ -357,6 +357,7 @@ class ScheduleCreationTest extends TestCase {
 
     public function testApi_PostScheduleJSONDependenciesSuccess()
     {
+        print "\nMY TEST START\n";
         $content = '
             {
               "dependencygraph" : {
@@ -539,6 +540,7 @@ class ScheduleCreationTest extends TestCase {
         print "\nNumber of correct tasks is ".$correct_tasks."\n";
         // Ensure that we got 8 correct tasks.
         $this->assertTrue($correct_tasks == 6);
+        print "\nMY TEST END\n";
     }
 
     public function testApi_PostScheduleXMLSuccess()
