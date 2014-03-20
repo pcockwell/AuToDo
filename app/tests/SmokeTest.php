@@ -19,28 +19,4 @@ class SmokeTest extends TestCase {
         $this->assertRedirectedTo('http://pcockwell.github.io/AuToDo/');
     }
 
-    public function testCanParseDependencyInput() {
-        $this->markTestSkipped(
-          'DependencyGraph code still WIP.'
-        );
-    
-        $data = json_decode( '
-            {
-              "dependencygraph" : {
-                "t1" : ["t2"],
-                "t2" : ["t3"]
-              }
-            }
-        ', true );
-
-        //Note that 2013-07-05 is a Friday, so only Sleep and Class apply as relevant events
-
-        $new_input = InputConverter::convertToObject($data);
-
-        $this->assertTrue(isset($new_input['dependencygraph']));
-        $this->assertTrue($new_input['dependencygraph']['t1'] == array('t2'));
-        $this->assertTrue($new_input['dependencygraph']['t2'] == array('t3'));
-
-    }
-
 }
