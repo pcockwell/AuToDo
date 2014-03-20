@@ -220,7 +220,7 @@ class ApiController extends BaseController
                                       'end' => null,
                                       'content' => null );
 
-        $prioritized_tasks = self::sortTasks( $tasks, $dep_graph );
+        $prioritized_tasks = self::sortTasks( $tasks, null );
 
         // Find last due date
         $last_due_time = null;
