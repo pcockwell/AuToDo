@@ -3,5 +3,6 @@ composer.phar
 composer.lock
 .DS_Store
 /app/config/database.php
+/public/ics/*.ics
 *.swp
 *.log

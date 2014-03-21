@@ -118,9 +118,74 @@ class ApiController extends BaseController
         }
 
         $sch = $this->createSchedule($tasks, $fixed_events, $prefs);
+        $this->setScheduleFile($sch, $user);
+
         // prepare a 200 OK response
         $response = Response::make( $sch, 200 );
         return $response;
+    }
+
+    private function setScheduleFile($schedule, $user)
+    {
+        $ics_file_name = "";
+        $ics_file_entry = DB::table('ics_files')
+            ->where('user_id', $user->id)->first();
+        if ($ics_file_entry)
+        {
+            $ics_file_name = $ics_file_entry->filename;
+        }
+        else
+        {
+            $ics_file_name = md5(time()).$user->id;
+            DB::table('ics_files')->insert(
+                array('user_id' => $user->id,
+                      'filename' => $ics_file_name)
+            );
+        }
+
+        $ics = $this->format_ics($schedule);
+
+        $filepath = base_path().'/public/ics/'.$ics_file_name.'.ics';
+        file_put_contents($filepath, $ics);
+    }
+
+    private function format_ics($schedule)
+    {
+        $data = "BEGIN:VCALENDAR\n".
+                "VERSION:2.0\n".
+                "PRODID:-//AuToDo API//EN\n";
+        foreach ($schedule as $evs)
+        {
+            $data = $data."BEGIN:VEVENT\n";
+
+            // Change into ics-happy format
+            $st_date = $evs['start'];
+            $dtstart = str_pad(strval($st_date->year), 4, "0", STR_PAD_LEFT);
+            $dtstart .= str_pad(strval($st_date->month), 2, "0", STR_PAD_LEFT);
+            $dtstart .= str_pad(strval($st_date->day), 2, "0", STR_PAD_LEFT);
+            $dtstart .= "T";
+            $dtstart .= str_pad(strval($st_date->hour), 2, "0", STR_PAD_LEFT);
+            $dtstart .= str_pad(strval($st_date->minute), 2, "0", STR_PAD_LEFT);
+            $dtstart .= str_pad(strval($st_date->second), 2, "0", STR_PAD_LEFT);
+            $data = $data."DTSTART:".$dtstart."\n";
+
+            $en_date = $evs['end'];
+            $dtend = str_pad(strval($en_date->year), 4, "0", STR_PAD_LEFT);
+            $dtend .= str_pad(strval($en_date->month), 2, "0", STR_PAD_LEFT);
+            $dtend .= str_pad(strval($en_date->day), 2, "0", STR_PAD_LEFT);
+            $dtend .= "T";
+            $dtend .= str_pad(strval($en_date->hour), 2, "0", STR_PAD_LEFT);
+            $dtend .= str_pad(strval($en_date->minute), 2, "0", STR_PAD_LEFT);
+            $dtend .= str_pad(strval($en_date->second), 2, "0", STR_PAD_LEFT);
+            $data = $data."DTEND:".$dtend."\n";
+
+            $data = $data."SUMMARY:".$evs['task']['name']."\n";
+
+            $data = $data."END:VEVENT\n";
+        }
+
+        $data = $data."END:VCALENDAR\n";
+        return $data;
     }
 
     public function postSchedule()
