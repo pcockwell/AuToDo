@@ -54,6 +54,30 @@ class TaskTableSeeder extends Seeder {
                     'duration' => $medium_duration,
                     'priority' => $medium_priority
                 ),
+                array(
+                    'name' => 'test user task 5',
+                    'due' => $due_far_away->toDateTimeString(),
+                    'duration' => $short_duration,
+                    'priority' => $medium_priority
+                ),
+                array(
+                    'name' => 'test user task 6',
+                    'due' => $due_soon->toDateTimeString(),
+                    'duration' => $long_duration,
+                    'priority' => $lowest_priority
+                ),
+                array(
+                    'name' => 'test user task 7',
+                    'due' => $due_far_away->toDateTimeString(),
+                    'duration' => $medium_duration,
+                    'priority' => $high_priority
+                ),
+                array(
+                    'name' => 'test user task 8',
+                    'due' => $due_far_away->toDateTimeString(),
+                    'duration' => $medium_duration,
+                    'priority' => $medium_priority
+                ),
             ),
             $pcockwell_id =>  array(
                 array(

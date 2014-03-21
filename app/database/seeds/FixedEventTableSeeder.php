@@ -18,7 +18,7 @@ class FixedEventTableSeeder extends Seeder {
         $next_year = $now->copy()->addYear();
 
         $monday_recurrence = "[1]";
-        $thursday_recurrence = "[4]";
+        $friday_recurrence = "[5]";
         $daily_recurrence = "[0,1,2,3,4,5,6]";
         $weekday_recurrence = "[1,2,3,4,5]";
         $weekend_recurrence = "[0,6]";
@@ -55,7 +55,23 @@ class FixedEventTableSeeder extends Seeder {
                     'end_time' => 1440,
                     'start_date' => $now->toDateTimeString(),
                     'end_date' => $next_year->toDateTimeString(),
-                    'recurrences' => $thursday_recurrence
+                    'recurrences' => $friday_recurrence
+                ),
+                array(
+                    'name' => 'test user fixed 5',
+                    'start_time' => 1080,
+                    'end_time' => 1230,
+                    'start_date' => $now->toDateTimeString(),
+                    'end_date' => $next_year->toDateTimeString(),
+                    'recurrences' => $daily_recurrence
+                ),
+                array(
+                    'name' => 'test user fixed 6',
+                    'start_time' => 1080,
+                    'end_time' => 1230,
+                    'start_date' => $now->toDateTimeString(),
+                    'end_date' => $next_year->toDateTimeString(),
+                    'recurrences' => $monday_recurrence
                 ),
             ),
             $pcockwell_id => array(
@@ -65,7 +81,7 @@ class FixedEventTableSeeder extends Seeder {
                     'end_time' => 1440,
                     'start_date' => $now->toDateTimeString(),
                     'end_date' => $next_year->toDateTimeString(),
-                    'recurrences' => $thursday_recurrence
+                    'recurrences' => $friday_recurrence
                 ),
                 array(
                     'name' => 'pcockwell fixed 2',
@@ -101,7 +117,7 @@ class FixedEventTableSeeder extends Seeder {
                     'end_time' => 1440,
                     'start_date' => $now->toDateTimeString(),
                     'end_date' => $next_year->toDateTimeString(),
-                    'recurrences' => $thursday_recurrence
+                    'recurrences' => $friday_recurrence
                 ),
                 array(
                     'name' => 'smiclette fixed 2',

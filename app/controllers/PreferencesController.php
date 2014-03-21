@@ -7,7 +7,15 @@ class PreferencesController extends \BaseController {
     public function __construct()
     {
         $this->beforeFilter('auth.basic.once');
-        $this->beforeFilter('authedRequest');
+        $this->beforeFilter(function($route = null, $request = null, $value = null)
+            {
+                $user_id = $route->getParameter('preferences');
+                if (!Auth::check() || Auth::user()->id != $user_id)
+                {
+                    return Response::make( 'Cannot access data for user with user id ' . $user_id, 404 );
+                }
+            }
+        );
     }
 
 	/**
@@ -43,7 +51,7 @@ class PreferencesController extends \BaseController {
      * @param  int  $id
      * @return Response
      */
-    public function show($id)
+    public function show($user_id)
     {
         $user = User::find($user_id);
 

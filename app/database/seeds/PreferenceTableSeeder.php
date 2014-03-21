@@ -13,10 +13,6 @@ class PreferenceTableSeeder extends Seeder {
         $tzhang_id = User::where('name', 'Tony Zhang')->first()->id;
 
         $preferences = array(
-                $test_user_id => array(
-                    'show_fixed_events' => false,
-                    'schedule_until_latest' => false
-                ),
                 $pcockwell_id => array(
                     'schedule_until_latest' => true
                 ),
