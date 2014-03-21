@@ -124,4 +124,20 @@ class UserController extends \BaseController {
     {
         return Response::make( Auth::user(), 200 );
     }
+
+    public function getIcsFile($user_id)
+    {
+        $ics_file_entry = DB::table('ics_files')
+            ->where('user_id', $user_id)->first();
+        if ($ics_file_entry)
+        {
+            $ics_file_name = $ics_file_entry->filename;
+            return Redirect::to('ics/'.$ics_file_name.'.ics');
+        }
+        else
+        {
+            return Response::make("ics file not found. Have you made a schedule yet?", 404);
+        }
+    }
+
 }

@@ -72,6 +72,9 @@ Route::group(array('prefix' => 'api', 'before' => 'apiInputFilter'),
 
         Route::get('user/{user}/schedule', array('before' => 'auth.basic.once|authedRequest', 
             'uses' => 'ApiController@userSchedule'))->where(array('user', '[0-9]+'));
+
+        Route::get('user/{user}/ics', array('before' => 'auth.basic.once|authedRequest',
+            'uses' => 'UserController@getIcsFile'))->where(array('user', '[0-9]+'));
         
         Route::get('user/find', array('before' => 'auth.basic.once',
             'uses' => 'UserController@findByEmail'));

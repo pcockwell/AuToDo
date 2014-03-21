@@ -31,6 +31,7 @@ If the `CONTENT-TYPE` header is set, but the `ACCEPT` header is not, the AuToDo 
 | ----------------- | ------------- | ------------------------- | ----------------------------------------------------------------------------------------- |
 | Generate Schedule | POST          | /schedule                 | Include a data object as described [here](#schedule-input-data-structure).                |
 | Generate Schedule | GET           | /user/{user_id}/schedule  | Returns schedule generated from saved user information for user with specified `user_id`. |
+| Get ICS File      | GET           | /user/{user_id}/ics       | Returns the last generated schedule for this user as an iCal file.                        |
 
 ### Users
 
