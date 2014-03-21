@@ -4,6 +4,12 @@ use Autodo\Exception\ValidationException;
 
 class UserController extends \BaseController {
 
+    public function __construct()
+    {
+        $this->beforeFilter('auth.basic.once', 
+            array('except' => 'store'));
+    }
+
     /**
      * Store a newly created resource in storage.
      *
@@ -114,7 +120,7 @@ class UserController extends \BaseController {
      */
     public function findByEmail()
     {
-        $email = Input::get('email');
+        $email = Auth::user()->email;
         $user = User::where('email', '=', $email)->firstOrFail();
         return Response::make( $user, 200 );
     }

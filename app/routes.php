@@ -69,16 +69,15 @@ Route::group(array('prefix' => 'api', 'before' => 'apiInputFilter'),
             'uses' => 'RemindersController@request'
         ));
 
-        Route::get('user/{user_id}/schedule', array('before' => 'auth.basic.once', 
-            'uses' => 'ApiController@userSchedule'))
-            ->where('user_id', '[0-9]+');
+        Route::get('user/schedule', array('before' => 'auth.basic.once', 
+            'uses' => 'ApiController@userSchedule'));
         
-        Route::get('user/find', array('before' => 'hasEmailInput|auth.basic.once',
+        Route::get('user/find', array('before' => 'auth.basic.once',
             'uses' => 'UserController@findByEmail'));
 
         // Controller to handle user accounts.
         Route::resource('user', 'UserController', 
-            array('before' => 'auth.basic.once', 'except' => array('index', 'create', 'edit')));
+            array('except' => array('show', 'index', 'create', 'edit')));
 
         // Controller to handle user accounts.
         Route::resource('user.task', 'TaskController', 

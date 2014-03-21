@@ -94,10 +94,11 @@ class ApiController extends BaseController
         return Task::TASK_MAX_PRIORITY;
     }
 
-    public function userSchedule($user_id)
+    public function userSchedule()
     {
         $sch = null; 
-        $user = User::find($user_id);
+        //$user = User::find($user_id);
+        $user = Auth::user();
         if (!isset($user)) {
             return Response::make( "Not found", 404 );
         }
