@@ -42,17 +42,8 @@ Route::filter('apiInputFilter', function(){
     }
 });
 
-Route::filter('hasEmailInput', function ()
-{
-    if (!Input::has('email'))
-    {
-        return Response::make( 'No such function', 404 );
-    }
-});
-
 Route::filter('authedRequest', function($route = null, $request = null, $value = null)
 {
-    print_r($route->getParameters());
     $user_id = $route->getParameter('user');
     if (!Auth::check() || Auth::user()->id != $user_id)
     {
@@ -87,17 +78,17 @@ Route::group(array('prefix' => 'api', 'before' => 'apiInputFilter'),
 
         // Controller to handle user accounts.
         Route::resource('user', 'UserController', 
-            array('before' => 'auth.basic.once|authedRequest', 'except' => array('index', 'create', 'edit')));
+            array('except' => array('index', 'create', 'edit')));
 
         // Controller to handle user accounts.
         Route::resource('user.task', 'TaskController', 
-            array('before' => 'auth.basic.once|authedRequest', 'except' => array('create', 'edit')));
+            array('except' => array('create', 'edit')));
         // Controller to handle user accounts.
         Route::resource('user.fixedevent', 'FixedEventController', 
-            array('before' => 'auth.basic.once|authedRequest', 'except' => array('create', 'edit')));
+            array('except' => array('create', 'edit')));
         // Controller to handle user accounts.
         Route::resource('preferences', 'PreferencesController',
-            array('before' => 'auth.basic.once|authedRequest', 'except' => array('index', 'create', 'edit')));
+            array('except' => array('index', 'create', 'edit')));
 
         //Must always be the last entry in the file
         Route::controller('/', 'ApiController');

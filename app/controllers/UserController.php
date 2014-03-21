@@ -4,20 +4,13 @@ use Autodo\Exception\ValidationException;
 
 class UserController extends \BaseController {
 
-    /*public function __construct()
+    public function __construct()
     {
         $this->beforeFilter('auth.basic.once', 
             array('except' => 'store'));
-        $this->beforeFilter(function($route)
-        {
-            print_r($route->getParameters());
-            $user_id = $route->getParameter('user');
-            if (!Auth::check() || Auth::user()->id != $user_id)
-            {
-                return Response::make( 'Cannot access data for user with user id ' . $user_id, 404 );
-            }
-        });
-    }*/
+        $this->beforeFilter('authedRequest', 
+            array('except' => array('store', 'findByEmail')));
+    }
 
     /**
      * Store a newly created resource in storage.
@@ -129,8 +122,6 @@ class UserController extends \BaseController {
      */
     public function findByEmail()
     {
-        $email = Auth::user()->email;
-        $user = User::where('email', '=', $email)->firstOrFail();
-        return Response::make( $user, 200 );
+        return Response::make( Auth::user(), 200 );
     }
 }

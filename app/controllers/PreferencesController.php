@@ -4,6 +4,12 @@ use Autodo\Exception\ValidationException;
 
 class PreferencesController extends \BaseController {
 
+    public function __construct()
+    {
+        $this->beforeFilter('auth.basic.once');
+        $this->beforeFilter('authedRequest');
+    }
+
 	/**
 	 * Store a newly created resource in storage.
 	 *

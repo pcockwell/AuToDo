@@ -4,6 +4,12 @@ use Autodo\Exception\ValidationException;
 
 class FixedEventController extends \BaseController {
 
+    public function __construct()
+    {
+        $this->beforeFilter('auth.basic.once');
+        $this->beforeFilter('authedRequest');
+    }
+
     /**
      * Display a listing of the resource.
      *
