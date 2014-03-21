@@ -62,6 +62,7 @@ class UserAccountTest extends TestCase {
      */
     public function testUser_FindByEmail_exists()
     {
+        $this->markTestSkipped();
         $email = 'test@example.com';
         $response = $this->call('GET', '/api/user/find',
             array('email'=>$email), array(), array(), '');
@@ -78,6 +79,7 @@ class UserAccountTest extends TestCase {
      */
     public function testUser_FindByEmail_dnexist()
     {
+        $this->markTestSkipped();
         $exception = 'Illuminate\Database\Eloquent\ModelNotFoundException';
         $this->setExpectedException($exception);
 
@@ -91,6 +93,7 @@ class UserAccountTest extends TestCase {
      */
     public function testUser_FindByEmail_noemail()
     {
+        $this->markTestSkipped();
         $exception = 'Illuminate\Database\Eloquent\ModelNotFoundException';
         $this->setExpectedException($exception);
         $this->call('GET', '/api/user/find', array(), array(), array(), '');
