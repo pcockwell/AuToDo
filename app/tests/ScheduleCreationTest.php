@@ -533,7 +533,7 @@ class ScheduleCreationTest extends TestCase {
         $this->assertTrue($correct_tasks == 6);
     }
 
-    public function testApi_PostScheduleJSONDependenciesSuccess()
+    public function testApi_PostScheduleJSONDependencies()
     {
         $content = '
             {
@@ -664,6 +664,180 @@ class ScheduleCreationTest extends TestCase {
         // Ensure that we got 8 correct tasks.
         print "\nNumber of correct tasks is ".$correct_tasks."\n";
         $this->assertTrue($correct_tasks == 6);
+    }
+
+    public function testApi_PostScheduleConflictResolution1()
+    {
+        $content = '
+            {
+              "tasks" : [
+                {
+                  "name" : "name1",
+                  "due" : "2013-12-04 12:00:00",
+                  "duration" : 60,
+                  "priority" : 1,
+                  "break_before" : 20,
+                  "break_after" : 20
+                },
+                {
+                  "name" : "name2",
+                  "due" : "2013-12-04 12:00:00",
+                  "duration" : 60,
+                  "priority" : 0,
+                  "break_before" : 20,
+                  "break_after" : 20
+                }
+              ],
+              "fixedevents" : [
+                {
+                  "name" : "Sleep",
+                  "start_time" : 0,
+                  "end_time" : 600,
+                  "start_date" : "2013-09-01 00:00:00",
+                  "end_date" : "2014-09-01 00:00:00",
+                  "recurrences" : "[0,1,2,3,4,5,6]",
+                  "break_before" : 0,
+                  "break_after" : 0
+                }
+              ],
+              "schedule_start" : "2013-12-04 00:00:00"
+            }
+        ';
+
+        //Note that 2013-07-05 is a Friday, so only Sleep and Class apply as relevant events
+
+        Route::enableFilters();
+        $response = $this->call('POST', '/api/schedule', 
+            array(), array(), array('CONTENT_TYPE' => 'application/json'),
+            $content);
+
+        $json_response = json_decode($response->getContent(), true);
+
+        // Make sure that the tasks are in the correct scheduled order
+        // with the correct start times.
+        $correct_tasks = 0;
+        foreach( $json_response as $key => $timeslot ) {
+
+            $timeslot["start"] = new Carbon($timeslot["start"]["date"], $timeslot["start"]["timezone"]);
+            $timeslot["end"] = new Carbon($timeslot["end"]["date"], $timeslot["end"]["timezone"]);
+
+            if( $key == 0 ) {
+                $this->assertTrue($timeslot['start']->eq(new Carbon('2013-12-04 00:00:00')));
+                $this->assertTrue($timeslot['end']->eq(new Carbon('2013-12-04 10:00:00')));
+                $this->assertTrue($timeslot['task']['name'] == "Sleep");
+                $correct_tasks++;
+            } else if( $key == 1 ) {
+                $this->assertTrue($timeslot['start']->eq(new Carbon('2013-12-04 10:00:00')));
+                $this->assertTrue($timeslot['end']->eq(new Carbon('2013-12-04 11:00:00')));
+                $this->assertTrue($timeslot['task']['name'] == "name1");
+                $correct_tasks++;
+            } else if( $key == 2 ) {
+                $this->assertTrue($timeslot['start']->eq(new Carbon('2013-12-04 11:00:00')));
+                $this->assertTrue($timeslot['end']->eq(new Carbon('2013-12-04 12:00:00')));
+                $this->assertTrue($timeslot['task']['name'] == "name2");
+                $correct_tasks++;
+            } 
+        }
+
+        //print "Number of correct tasks is ".$correct_tasks;
+        // Ensure that we got 8 correct tasks.
+        print "\nNumber of correct tasks is ".$correct_tasks."\n";
+        $this->assertTrue($correct_tasks == 3);
+    }
+
+    public function testApi_PostScheduleConflictResolution2()
+    {
+
+        $content = '
+            {
+              "tasks" : [
+                {
+                  "name" : "name1",
+                  "due" : "2013-12-04 14:00:00",
+                  "duration" : 60,
+                  "priority" : 1,
+                  "break_before" : 20,
+                  "break_after" : 20
+                },
+                {
+                  "name" : "name2",
+                  "due" : "2013-12-04 14:00:00",
+                  "duration" : 60,
+                  "priority" : 0,
+                  "break_before" : 20,
+                  "break_after" : 20
+                }
+              ],
+              "fixedevents" : [
+                {
+                  "name" : "Sleep",
+                  "start_time" : 0,
+                  "end_time" : 600,
+                  "start_date" : "2013-12-03 00:00:00",
+                  "end_date" : "2013-12-06 00:00:00",
+                  "recurrences" : "[0,1,2,3,4,5,6]",
+                  "break_before" : 0,
+                  "break_after" : 0
+                },
+                {
+                  "name" : "Class",
+                  "start_time" : 720,
+                  "end_time" : 840,
+                  "start_date" : "2013-12-03 00:00:00",
+                  "end_date" : "2013-12-06 00:00:00",
+                  "recurrences" : "[0,1,2,3,4,5,6]",
+                  "break_before" : 0,
+                  "break_after" : 0
+                }
+              ],
+              "schedule_start" : "2013-12-04 00:00:00"
+            }
+        ';
+
+        //Note that 2013-07-05 is a Friday, so only Sleep and Class apply as relevant events
+
+        Route::enableFilters();
+        $response = $this->call('POST', '/api/schedule', 
+            array(), array(), array('CONTENT_TYPE' => 'application/json'),
+            $content);
+
+        $json_response = json_decode($response->getContent(), true);
+
+        // Make sure that the tasks are in the correct scheduled order
+        // with the correct start times.
+        $correct_tasks = 0;
+        foreach( $json_response as $key => $timeslot ) {
+
+            $timeslot["start"] = new Carbon($timeslot["start"]["date"], $timeslot["start"]["timezone"]);
+            $timeslot["end"] = new Carbon($timeslot["end"]["date"], $timeslot["end"]["timezone"]);
+
+            if( $key == 0 ) {
+                $this->assertTrue($timeslot['start']->eq(new Carbon('2013-12-04 00:00:00')));
+                $this->assertTrue($timeslot['end']->eq(new Carbon('2013-12-04 10:00:00')));
+                $this->assertTrue($timeslot['task']['name'] == "Sleep");
+                $correct_tasks++;
+            } else if( $key == 1 ) {
+                $this->assertTrue($timeslot['start']->eq(new Carbon('2013-12-04 10:00:00')));
+                $this->assertTrue($timeslot['end']->eq(new Carbon('2013-12-04 11:00:00')));
+                $this->assertTrue($timeslot['task']['name'] == "name1");
+                $correct_tasks++;
+            } else if( $key == 2 ) {
+                $this->assertTrue($timeslot['start']->eq(new Carbon('2013-12-04 11:00:00')));
+                $this->assertTrue($timeslot['end']->eq(new Carbon('2013-12-04 12:00:00')));
+                $this->assertTrue($timeslot['task']['name'] == "name2");
+                $correct_tasks++;
+            } else if( $key == 3 ) {
+                $this->assertTrue($timeslot['start']->eq(new Carbon('2013-12-04 12:00:00')));
+                $this->assertTrue($timeslot['end']->eq(new Carbon('2013-12-04 14:00:00')));
+                $this->assertTrue($timeslot['task']['name'] == "Class");
+                $correct_tasks++;
+            } 
+        }
+
+        //print "Number of correct tasks is ".$correct_tasks;
+        // Ensure that we got 8 correct tasks.
+        print "\nNumber of correct tasks is ".$correct_tasks."\n";
+        $this->assertTrue($correct_tasks == 4);
     }
 
     public function testApi_PostScheduleUnsupportedContentType() 
