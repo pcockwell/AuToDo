@@ -132,7 +132,7 @@ class UserController extends \BaseController {
         if ($ics_file_entry)
         {
             $ics_file_name = $ics_file_entry->filename;
-            return Redirect::to('ics/'.$ics_file_name.'.ics');
+            return URL::to('ics/'.$ics_file_name.'.ics');
         }
         else
         {
