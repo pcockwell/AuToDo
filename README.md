@@ -36,6 +36,8 @@ If the `CONTENT-TYPE` header is set, but the `ACCEPT` header is not, the AuToDo 
 
 The `user_id` parameter is a numeric value, unique to each user.
 
+Each of these methods, besides creation, requires the use of HTTP basic authentication using the user's email and password.
+
 | Method    | Request Type  | URL               | Description                                                                                   |
 | --------- | ------------- | ----------------- | --------------------------------------------------------------------------------------------- |
 | Create    | POST          | /user             | Include a data object as described [here](#user). Returns created user.                       |
@@ -47,6 +49,8 @@ The `user_id` parameter is a numeric value, unique to each user.
 ### Tasks
 
 The `task_id` parameter is a numeric value, unique to each task. The `user_id` parameter is a numeric value, unique to each user. Where both `task_id` and `user_id` are required, if the task with identifier `task_id` does not have a matching `user_id`, it will not be returned.
+
+Each of these methods requires the use of HTTP basic authentication using the user's email and password.
 
 | Method    | Request Type  | URL                               | Description                                                                                   |
 | --------- | ------------- | --------------------------------- | --------------------------------------------------------------------------------------------- |
@@ -60,6 +64,8 @@ The `task_id` parameter is a numeric value, unique to each task. The `user_id` p
 
 The `event_id` parameter is a numeric value, unique to each task. The `user_id` parameter is a numeric value, unique to each user. Where both `event_id` and `user_id` are required, if the task with identifier `event_id` does not have a matching `user_id`, it will not be returned.
 
+Each of these methods requires the use of HTTP basic authentication using the user's email and password.
+
 | Method    | Request Type  | URL                                   | Description                                                                                   |
 | --------- | ------------- | ------------------------------------- | --------------------------------------------------------------------------------------------- |
 | Create    | POST          | /user/{user_id}/fixedevent            | Include a data object as described [here](#fixed-event). Returns created event.               |
@@ -71,6 +77,8 @@ The `event_id` parameter is a numeric value, unique to each task. The `user_id` 
 ### Preferences
 
 The `user_id` parameter is a numeric value, unique to each user.
+
+Each of these methods requires the use of HTTP basic authentication using the user's email and password.
 
 | Method    | Request Type  | URL                       | Description                                                                                   |
 | --------- | ------------- | ------------------------- | --------------------------------------------------------------------------------------------- |
@@ -84,13 +92,14 @@ Data Object Structures
 
 ### User
 
-| Attribute Name    | Formatting            | Can Be Modified   | Required On Input | Description                                                   |
-| ----------------- | --------------------- | ------------------| ----------------- | ------------------------------------------------------------- |
-| id                | Integer               | No                | No                | User's unique identifier.                                     |
-| name              | String                | Yes               | On Create Only    | User's real name.                                             |
-| email             | Valid Email Address   | Yes               | On Create Only    | User's contact email address.                                 |
-| created_at        | Timestamp             | No                | No                | Date and time when the user was created in the database.      |
-| updated_at        | Timestamp             | No                | No                | Date and time when the user was last updated in the database. |
+| Attribute Name    | Formatting            | Can Be Modified     | Required On Input | Description                                                   |
+| ----------------- | --------------------- | --------------------| ----------------- | ------------------------------------------------------------- |
+| id                | Integer               | No                  | No                | User's unique identifier.                                     |
+| name              | String                | Yes                 | On Create Only    | User's real name.                                             |
+| email             | Valid Email Address   | Yes                 | On Create Only    | User's contact email address.                                 |
+| password          | String size 6+        | Yes (not by update) | On Create Only    | A password for the user.                                      |
+| created_at        | Timestamp             | No                  | No                | Date and time when the user was created in the database.      |
+| updated_at        | Timestamp             | No                  | No                | Date and time when the user was last updated in the database. |
 
 ### Task
 
