@@ -50,6 +50,16 @@ Route::filter('hasEmailInput', function ()
     }
 });
 
+Route::filter('authedRequest', function($route = null, $request = null, $value = null)
+{
+    print_r($route->getParameters());
+    $user_id = $route->getParameter('user');
+    if (!Auth::check() || Auth::user()->id != $user_id)
+    {
+        return Response::make( 'Cannot access data for user with user id ' . $user_id, 404 );
+    }
+});
+
 Route::get('/api/oauth2callback', 'ApiController@oauth2Callback');
 
 Route::get('password/reset/{token}', array(
@@ -69,25 +79,25 @@ Route::group(array('prefix' => 'api', 'before' => 'apiInputFilter'),
             'uses' => 'RemindersController@request'
         ));
 
-        Route::get('user/schedule', array('before' => 'auth.basic.once', 
-            'uses' => 'ApiController@userSchedule'));
+        Route::get('user/{user}/schedule', array('before' => 'auth.basic.once|authedRequest', 
+            'uses' => 'ApiController@userSchedule'))->where(array('user', '[0-9]+'));
         
         Route::get('user/find', array('before' => 'auth.basic.once',
             'uses' => 'UserController@findByEmail'));
 
         // Controller to handle user accounts.
         Route::resource('user', 'UserController', 
-            array('except' => array('show', 'index', 'create', 'edit')));
+            array('before' => 'auth.basic.once|authedRequest', 'except' => array('index', 'create', 'edit')));
 
         // Controller to handle user accounts.
         Route::resource('user.task', 'TaskController', 
-            array('before' => 'auth.basic.once', 'except' => array('create', 'edit')));
+            array('before' => 'auth.basic.once|authedRequest', 'except' => array('create', 'edit')));
         // Controller to handle user accounts.
         Route::resource('user.fixedevent', 'FixedEventController', 
-            array('before' => 'auth.basic.once', 'except' => array('create', 'edit')));
+            array('before' => 'auth.basic.once|authedRequest', 'except' => array('create', 'edit')));
         // Controller to handle user accounts.
         Route::resource('preferences', 'PreferencesController',
-            array('before' => 'auth.basic.once', 'except' => array('index', 'create', 'edit')));
+            array('before' => 'auth.basic.once|authedRequest', 'except' => array('index', 'create', 'edit')));
 
         //Must always be the last entry in the file
         Route::controller('/', 'ApiController');
