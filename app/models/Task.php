@@ -70,7 +70,7 @@ class Task extends Eloquent
 
     public function user()
     {
-        $this->belongsTo('User');
+        return $this->belongsTo('User');
     }
 
 	public function getDates()
