@@ -101,7 +101,7 @@ class FixedEventController extends \BaseController {
 
         $newEventInfo = Input::all();
 
-        if (!Task::valid($newEventInfo))
+        if (!FixedEvent::valid($newEventInfo))
         {
             return Response::make( 'Fixed event details supplied are not valid.', 400 );
         }
